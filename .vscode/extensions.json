@@ -1,0 +1,13 @@
+{
+	"recommendations": [
+		"dbaeumer.vscode-eslint",
+		"eamodio.gitlens",
+		"editorconfig.editorconfig",
+		"esbenp.prettier-vscode",
+		"styled-components.vscode-styled-components",
+		"kumar-harsh.graphql-for-vscode",
+		"sodatea.velocity",
+		"vivaxy.vscode-conventional-commits",
+		"SebastianBille.iam-legend"
+	]
+}

@@ -1,0 +1,12 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "env:vscode",
+			"problemMatcher": [],
+			"label": "npm: env:vscode",
+			"detail": "env-cmd -f .env bash -c \"ssocreds -p \\$AWS_PROFILE\" && npm run set-stage"
+		}
+	]
+}

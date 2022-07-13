@@ -1,0 +1,27 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "SST - Start",
+			"type": "node",
+			"request": "launch",
+			"envFile": "${workspaceFolder}/.env",
+			"runtimeExecutable": "${workspaceRoot}/node_modules/.bin/sst",
+			"runtimeArgs": ["start", "--increase-timeout"],
+			"console": "integratedTerminal",
+			"skipFiles": ["<node_internals>/**"],
+			"preLaunchTask": "npm: env:vscode"
+		},
+		{
+			"name": "Vitest - Current folder",
+			"type": "pwa-node",
+			"request": "launch",
+			"autoAttachChildProcesses": true,
+			"skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+			"program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+			"args": ["--watch", "${relativeFileDirname}"],
+			"smartStep": true,
+			"console": "integratedTerminal"
+		}
+	]
+}

@@ -1,0 +1,14 @@
+{
+	"extends": "@tsconfig/node16/tsconfig.json",
+	"compilerOptions": {
+		"module": "esnext",
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"strict": true,
+		"noImplicitAny": true,
+		"strictFunctionTypes": true,
+		"noErrorTruncation": true,
+		"allowSyntheticDefaultImports": true
+	},
+	"include": ["stacks"]
+}
