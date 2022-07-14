@@ -8,8 +8,8 @@
 		"env:vscode": "env-cmd -f .env bash -c \"ssocreds -p \\$AWS_PROFILE\" && npm run set-stage",
 		"env": "env-cmd -f .env bash -c \"ssocreds -p \\$AWS_PROFILE\" && npm run set-stage && env-cmd -f .env",
 		"set-stage": "./.scripts/setStage",
-		"lint": "eslint 'src' 'stacks' --ext .ts,.tsx,.js,.jsx,.json && prettier -c \"src/**/*.{graphql,gql,html}\"",
-		"lint:fix": "eslint 'src' 'stacks' --ext .ts,.tsx,.js,.jsx,.json --fix && prettier --write \"src/**/*.{graphql,gql,html}\"",
+		"lint": "eslint 'services' 'stacks' 'packages' --quiet --ext .ts,.tsx,.js,.jsx,.json && prettier -c \"{services,stacks,packages}/**/*.{graphql,gql,html}\"",
+		"lint:fix": "eslint 'services' 'stacks' 'packages' --quiet --ext .ts,.tsx,.js,.jsx,.json --fix && prettier --write \"{services,stacks,packages}/**/*.{graphql,gql,html}\"",
 		"start": "npm run env -- sst start",
 		"build": "npm run env -- sst build",
 		"deploy": "npm run env -- sst deploy",
@@ -21,7 +21,7 @@
 		"graphql-codegen": "graphql-codegen --config codegen.yml"
 	},
 	"lint-staged": {
-		"*.{ts,tsx,js,jsx,json}": "eslint --fix",
+		"*.{ts,tsx,js,jsx,json}": "eslint --quiet --fix",
 		"*.{graphql,gql,html}": "prettier --write"
 	},
 	"devDependencies": {
