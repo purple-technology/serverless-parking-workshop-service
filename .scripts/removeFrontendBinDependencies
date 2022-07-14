@@ -1,0 +1,4 @@
+#!/bin/sh
+
+rm -rf services/frontend/node_modules/.bin/next
+rm -rf services/frontend/node_modules/.bin/sst-env

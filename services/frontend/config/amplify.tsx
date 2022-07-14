@@ -3,8 +3,7 @@ export const amplifyConfig = {
 		region: (process.env.NEXT_PUBLIC_USER_POOL_ID ?? '').split('_')[0],
 		userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID,
 		userPoolWebClientId: process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID,
-		mandatorySignIn: true,
-		authenticationFlowType: 'USER_PASSWORD_AUTH'
+		mandatorySignIn: true
 	},
 	aws_appsync_graphqlEndpoint: process.env.NEXT_PUBLIC_API_URL,
 	aws_appsync_region: (process.env.NEXT_PUBLIC_USER_POOL_ID ?? '').split(

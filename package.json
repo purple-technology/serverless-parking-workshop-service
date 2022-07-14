@@ -3,8 +3,8 @@
 	"version": "1.0.0",
 	"private": true,
 	"scripts": {
-		"preinstall": "./.scripts/removeNextFromFrontend",
-		"prepare": "husky install && ./.scripts/linkNextToFrontend",
+		"preinstall": "./.scripts/removeFrontendBinDependencies",
+		"prepare": "husky install && ./.scripts/linkFrontendBinDependencies",
 		"env:vscode": "env-cmd -f .env bash -c \"ssocreds -p \\$AWS_PROFILE\" && npm run set-stage",
 		"env": "env-cmd -f .env bash -c \"ssocreds -p \\$AWS_PROFILE\" && npm run set-stage && env-cmd -f .env",
 		"set-stage": "./.scripts/setStage",
@@ -57,7 +57,7 @@
 		"prettier": "^2.6.2"
 	},
 	"workspaces": [
-		"src/*",
-		"src/packages/*"
+		"services/*",
+		"packages/*"
 	]
 }

@@ -12,7 +12,7 @@ export function FrontendStack({ stack }: StackContext): void {
 	const domainName = `${getBasePath()}-sls-ws-fe.purple-technology.com`
 
 	new NextjsSite(stack, 'Next', {
-		path: 'src/frontend',
+		path: 'services/frontend',
 		environment: {
 			NEXT_PUBLIC_API_URL: api.appSyncApi.url,
 			NEXT_PUBLIC_USER_POOL_ID: resources.auth.cdk.userPool.userPoolId,
