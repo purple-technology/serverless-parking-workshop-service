@@ -4,11 +4,14 @@ import {
 	Function,
 	StackContext
 } from '@serverless-stack/resources'
+import { Table } from '@serverless-stack/resources'
 import { Fn } from 'aws-cdk-lib'
-import { PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import kebabCase from 'lodash.kebabcase'
 
 interface ResourcesStackOutput {
 	auth: Auth
+	userDataTable: Table
 	photosBucket: Bucket
 }
 
@@ -17,8 +20,27 @@ export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 		srcPath: 'services'
 	})
 
+	const userDataTable = new Table(stack, 'UserData', {
+		fields: {
+			username: 'string'
+		},
+		primaryIndex: { partitionKey: 'username' },
+		timeToLiveAttribute: 'ttl'
+	})
+
 	const auth = new Auth(stack, 'Auth', {
-		login: ['email'],
+		login: ['username'],
+		triggers: {
+			preSignUp: {
+				handler: 'cognito/src/preSignUp.handler'
+			},
+			postConfirmation: {
+				handler: 'cognito/src/postConfirmation.handler',
+				environment: {
+					USER_DATA_TABLE_NAME: userDataTable.tableName
+				}
+			}
+		},
 		cdk: {
 			userPool: {
 				passwordPolicy: {
@@ -32,6 +54,14 @@ export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 		}
 	})
 
+	auth.attachPermissionsForTriggers([
+		new PolicyStatement({
+			effect: Effect.ALLOW,
+			actions: ['dynamodb:UpdateItem'],
+			resources: [userDataTable.tableArn]
+		})
+	])
+
 	const rekognitionFunction = new Function(stack, 'RekognitionFunction', {
 		handler: 'rekognition/src/processImage/index.handler',
 		initialPolicy: [
@@ -43,7 +73,7 @@ export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 	})
 
 	const photosBucket = new Bucket(stack, 'Photos', {
-		name: `${stack.stackName}.photos`,
+		name: `${kebabCase(stack.stackName)}.photos-2`,
 		cors: [
 			{
 				allowedHeaders: ['*'],
@@ -69,6 +99,7 @@ export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 
 	return {
 		auth,
-		photosBucket
+		photosBucket,
+		userDataTable
 	}
 }

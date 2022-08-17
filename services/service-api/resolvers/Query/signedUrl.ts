@@ -1,4 +1,4 @@
-import { Query } from '@packages/graphql-types'
+import { Query } from '@packages/service-graphql-types'
 import { AppSyncResolverHandler } from 'aws-lambda'
 import AWS from 'aws-sdk'
 

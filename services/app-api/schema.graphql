@@ -4,8 +4,13 @@ type SignedUrl {
 	fields: String!
 }
 
+type Api {
+	key: String!
+}
+
 type Query {
 	signedUrl: SignedUrl!
+	api: Api!
 }
 
 #type Mutation {

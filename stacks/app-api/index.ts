@@ -7,25 +7,29 @@ import { Fn } from 'aws-cdk-lib'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 import { ResourcesStack } from '../resources'
+import { ServiceApiStack } from '../service-api'
 import { dataSources, resolvers } from './appSyncLoaders'
 
-interface ApiStackOutput {
+interface AppApiStackOutput {
 	appSyncApi: AppSyncApi
 }
 
-export function ApiStack({ stack }: StackContext): ApiStackOutput {
+export function AppApiStack({ stack }: StackContext): AppApiStackOutput {
 	const resources = use(ResourcesStack)
+	const serviceApi = use(ServiceApiStack)
 
 	stack.setDefaultFunctionProps({
 		srcPath: 'services'
 	})
 
-	const appSyncApi = new AppSyncApi(stack, 'GraphqlApi', {
-		schema: 'services/api/schema.graphql',
+	const appSyncApi = new AppSyncApi(stack, 'AppGraphqlApi', {
+		schema: 'services/app-api/schema.graphql',
 		defaults: {
 			function: {
 				environment: {
-					PHOTOS_BUCKET_NAME: resources.photosBucket.bucketName
+					PHOTOS_BUCKET_NAME: resources.photosBucket.bucketName,
+					USER_DATA_TABLE_NAME: resources.userDataTable.tableName,
+					SERVICE_API_ID: serviceApi.appSyncApi.apiId
 				}
 			}
 		},
@@ -52,11 +56,21 @@ export function ApiStack({ stack }: StackContext): ApiStackOutput {
 			effect: Effect.ALLOW,
 			actions: ['s3:PutObject'],
 			resources: [Fn.join('', [resources.photosBucket.bucketArn, '/*'])]
+		}),
+		new PolicyStatement({
+			effect: Effect.ALLOW,
+			actions: ['dynamodb:PutItem', 'dynamodb:GetItem', 'dynamodb:UpdateItem'],
+			resources: [resources.userDataTable.tableArn]
+		}),
+		new PolicyStatement({
+			effect: Effect.ALLOW,
+			actions: ['appsync:CreateApiKey'],
+			resources: ['*']
 		})
 	])
 
 	stack.addOutputs({
-		ApiEndpoint: appSyncApi.url
+		AppApiEndpoint: appSyncApi.url
 	})
 
 	return {

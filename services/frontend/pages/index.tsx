@@ -1,8 +1,8 @@
 import type { NextPage } from 'next'
-import { Hello } from 'scenes/Hello'
+import { Home } from 'scenes/Home'
 
-const Home: NextPage = () => {
-	return <Hello />
+const HomePage: NextPage = () => {
+	return <Home />
 }
 
-export default Home
+export default HomePage

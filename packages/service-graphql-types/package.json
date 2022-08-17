@@ -1,5 +1,5 @@
 {
-	"name": "@packages/graphql-types",
+	"name": "@packages/service-graphql-types",
 	"version": "1.0.0",
 	"type": "module",
 	"main": "src/index.ts"

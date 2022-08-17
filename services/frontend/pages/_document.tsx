@@ -8,13 +8,14 @@ import Document, {
 } from 'next/document'
 import * as React from 'react'
 import { ServerStyleSheet } from 'styled-components'
-import { Server, Sheet } from 'styletron-engine-atomic'
+import { Server } from 'styletron-engine-atomic'
+import { sheetT } from 'styletron-engine-atomic/lib/server/server'
 import { Provider as StyletronProvider } from 'styletron-react'
 
 import { styletron } from '../config/styletron'
 
 interface AppDocumentProps {
-	styletronStylesheets: Sheet[]
+	styletronStylesheets: sheetT[]
 }
 
 class AppDocument extends Document<AppDocumentProps> {

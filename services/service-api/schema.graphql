@@ -1,0 +1,9 @@
+type SignedUrl {
+	url: String!
+	key: String!
+	fields: String!
+}
+
+type Query {
+	signedUrl: SignedUrl!
+}
