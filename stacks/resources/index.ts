@@ -62,11 +62,19 @@ export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 		})
 	])
 
-	const rekognitionFunction = new Function(stack, 'RekognitionFunction', {
-		handler: 'rekognition/src/processImage/index.handler',
+	const replicatorFunction = new Function(stack, 'ReplicatorFunction', {
+		handler: 's3/src/replicator/index.handler',
+		environment: {
+			USER_DATA_TABLE_NAME: userDataTable.tableName
+		},
 		initialPolicy: [
 			new PolicyStatement({
-				actions: ['rekognition:DetectText'],
+				actions: ['dynamodb:Scan'],
+				resources: [userDataTable.tableArn]
+			}),
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: ['s3:PutObject'],
 				resources: ['*']
 			})
 		]
@@ -84,13 +92,13 @@ export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 		],
 		notifications: {
 			rekognition: {
-				function: rekognitionFunction,
+				function: replicatorFunction,
 				events: ['object_created']
 			}
 		}
 	})
 
-	rekognitionFunction.attachPermissions([
+	replicatorFunction.attachPermissions([
 		new PolicyStatement({
 			actions: ['s3:GetObject'],
 			resources: [Fn.join('', [photosBucket.bucketArn, '/*'])]
