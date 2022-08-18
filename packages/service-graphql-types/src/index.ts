@@ -18,9 +18,37 @@ export type Scalars = {
 	Float: number
 }
 
+export type Mutation = {
+	__typename?: 'Mutation'
+	allowEntry: Scalars['Boolean']
+	reserveSpace: Scalars['Boolean']
+}
+
+export type MutationReserveSpaceArgs = {
+	space: Scalars['ID']
+	subject: Scalars['String']
+	time?: InputMaybe<Scalars['Int']>
+}
+
+export type ParkingLot = {
+	__typename?: 'ParkingLot'
+	gateOpen: Scalars['Boolean']
+	reservations: Array<Reservation>
+	time: Scalars['String']
+}
+
 export type Query = {
 	__typename?: 'Query'
+	parkingLot: ParkingLot
 	signedUrl: SignedUrl
+}
+
+export type Reservation = {
+	__typename?: 'Reservation'
+	creationTimestamp: Scalars['String']
+	remainingTime?: Maybe<Scalars['Int']>
+	space: Scalars['ID']
+	subject: Scalars['String']
 }
 
 export type SignedUrl = {

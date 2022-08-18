@@ -1,20 +1,23 @@
-type SignedUrl {
-	url: String!
-	key: String!
-	fields: String!
+type Config {
+	eventBusArn: String
+	s3BucketName: String
 }
 
 type Api {
 	key: String!
 }
 
-type Query {
-	signedUrl: SignedUrl!
-	api: Api!
+type Void {
+	success: Boolean!
 }
 
-#type Mutation {
-#	createNote(note: NoteInput!): Note
-#	deleteNote(noteId: String!): String
-#	updateNote(note: UpdateNoteInput!): Note
-#}
+type Query {
+	api: Api!
+	config: Config!
+}
+
+type Mutation {
+	copyS3Object(objectId: ID!): Void!
+	setEventBusArn(eventBusArn: String!): Void
+	setS3BucketName(s3BucketName: String!): Void
+}

@@ -1,0 +1,21 @@
+{
+    "version" : "2018-05-29",
+    "operation" : "UpdateItem",
+    "key": {
+        "username" : { "S": "$ctx.identity.username" },
+    },
+    "update" : {
+        "expression" : "SET #ebid = :ebid",
+        "expressionNames" : {
+            "#ebid" : "eventBusArn"
+        },
+        "expressionValues" : {
+            ":ebid" : {
+                "S": "$ctx.args.eventBusArn"
+            }
+        }
+    },
+    "condition" : {
+        "expression" : "attribute_exists(username)"
+    }
+}

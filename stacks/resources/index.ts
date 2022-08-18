@@ -7,6 +7,8 @@ import {
 import { Table } from '@serverless-stack/resources'
 import { Fn } from 'aws-cdk-lib'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import { BucketAccessControl } from 'aws-cdk-lib/aws-s3'
+import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment'
 import kebabCase from 'lodash.kebabcase'
 
 interface ResourcesStackOutput {
@@ -14,7 +16,13 @@ interface ResourcesStackOutput {
 	userDataTable: Table
 	photosBucket: Bucket
 }
-
+/**
+ *
+ *
+ * @export
+ * @param {StackContext} { stack }
+ * @returns {ResourcesStackOutput}
+ */
 export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 	stack.setDefaultFunctionProps({
 		srcPath: 'services'
@@ -91,11 +99,17 @@ export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 			}
 		],
 		notifications: {
-			rekognition: {
+			replicator: {
 				function: replicatorFunction,
 				events: ['object_created']
 			}
 		}
+	})
+
+	new BucketDeployment(stack, 'TestingPhotos', {
+		sources: [Source.asset('./stacks/resources/assets/photos')],
+		accessControl: BucketAccessControl.PUBLIC_READ,
+		destinationBucket: photosBucket.cdk.bucket
 	})
 
 	replicatorFunction.attachPermissions([

@@ -70,6 +70,14 @@ class AppDocument extends Document<AppDocumentProps> {
 							key={i}
 						/>
 					))}
+					<link
+						rel="stylesheet"
+						href="https://codemirror.net/5/lib/codemirror.css"
+					/>
+					<link
+						href="https://unpkg.com/graphiql/graphiql.min.css"
+						rel="stylesheet"
+					/>
 					<link rel="icon" href="/favicon.ico" />
 				</Head>
 				<body>

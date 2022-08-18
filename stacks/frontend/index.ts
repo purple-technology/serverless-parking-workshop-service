@@ -4,9 +4,11 @@ import { Certificate } from 'aws-cdk-lib/aws-certificatemanager'
 
 import { AppApiStack } from '../app-api'
 import { ResourcesStack } from '../resources'
+import { ServiceApiStack } from '../service-api'
 
 export function FrontendStack({ stack }: StackContext): void {
-	const api = use(AppApiStack)
+	const appApi = use(AppApiStack)
+	const serviceApi = use(ServiceApiStack)
 	const resources = use(ResourcesStack)
 
 	const domainName = `${getBasePath()}-sls-ws-fe.workshops.purple-technology.com`
@@ -14,10 +16,13 @@ export function FrontendStack({ stack }: StackContext): void {
 	new NextjsSite(stack, 'Next', {
 		path: 'services/frontend',
 		environment: {
-			NEXT_PUBLIC_API_URL: api.appSyncApi.url,
+			NEXT_PUBLIC_APP_API_URL: appApi.appSyncApi.url,
 			NEXT_PUBLIC_USER_POOL_ID: resources.auth.cdk.userPool.userPoolId,
 			NEXT_PUBLIC_USER_POOL_CLIENT_ID:
-				resources.auth.cdk.userPoolClient.userPoolClientId
+				resources.auth.cdk.userPoolClient.userPoolClientId,
+			NEXT_PUBLIC_SERVICE_API_URL: serviceApi.appSyncApi.url,
+			NEXT_PUBLIC_S3_PHOTO_OBJECT_BASE_URL:
+				resources.photosBucket.cdk.bucket.urlForObject()
 		},
 		customDomain: {
 			domainName,

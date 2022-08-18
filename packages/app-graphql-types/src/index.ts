@@ -23,15 +23,45 @@ export type Api = {
 	key: Scalars['String']
 }
 
+export type Config = {
+	__typename?: 'Config'
+	eventBusArn?: Maybe<Scalars['String']>
+	s3BucketName?: Maybe<Scalars['String']>
+}
+
+export type Mutation = {
+	__typename?: 'Mutation'
+	copyS3Object: Void
+	setEventBusArn?: Maybe<Void>
+	setS3BucketName?: Maybe<Void>
+}
+
+export type MutationCopyS3ObjectArgs = {
+	objectId: Scalars['ID']
+}
+
+export type MutationSetEventBusArnArgs = {
+	eventBusArn: Scalars['String']
+}
+
+export type MutationSetS3BucketNameArgs = {
+	s3BucketName: Scalars['String']
+}
+
 export type Query = {
 	__typename?: 'Query'
 	api: Api
-	signedUrl: SignedUrl
+	config: Config
 }
 
-export type SignedUrl = {
-	__typename?: 'SignedUrl'
-	fields: Scalars['String']
-	key: Scalars['String']
-	url: Scalars['String']
+export type Void = {
+	__typename?: 'Void'
+	success: Scalars['Boolean']
+}
+
+export type ApiKeyQueryVariables = Exact<{ [key: string]: never }>
+
+export type ApiKeyQuery = {
+	__typename?: 'Query'
+	api: { __typename?: 'Api'; key: string }
 }

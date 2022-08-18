@@ -1,0 +1,21 @@
+{
+    "version" : "2018-05-29",
+    "operation" : "UpdateItem",
+    "key": {
+        "username" : { "S": "$ctx.identity.username" },
+    },
+    "update" : {
+        "expression" : "SET #bn = :bn",
+        "expressionNames" : {
+            "#bn" : "s3BucketName"
+        },
+        "expressionValues" : {
+            ":bn" : {
+                "S": "$ctx.args.s3BucketName"
+            }
+        }
+    },
+    "condition" : {
+        "expression" : "attribute_exists(username)"
+    }
+}

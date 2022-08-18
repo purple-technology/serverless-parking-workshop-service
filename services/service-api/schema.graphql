@@ -1,9 +1,29 @@
+type Query {
+	parkingLot: ParkingLot!
+
+	signedUrl: SignedUrl!
+}
+
+type Mutation {
+	allowEntry: Boolean!
+	reserveSpace(space: ID!, subject: String!, time: Int): Boolean!
+}
+
+type ParkingLot {
+	time: String!
+	reservations: [Reservation!]!
+	gateOpen: Boolean!
+}
+
+type Reservation {
+	space: ID!
+	subject: String!
+	creationTimestamp: String!
+	remainingTime: Int
+}
+
 type SignedUrl {
 	url: String!
 	key: String!
 	fields: String!
-}
-
-type Query {
-	signedUrl: SignedUrl!
 }

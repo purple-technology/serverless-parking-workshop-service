@@ -9,7 +9,7 @@ export const getAllBuckets = async (
 		TableName: `${process.env.USER_DATA_TABLE_NAME}`,
 		ExpressionAttributeNames: {
 			'#UN': 'username',
-			'#BN': 'BucketName'
+			'#BN': 's3BucketName'
 		},
 		FilterExpression: 'attribute_exists(#BN)',
 		ProjectionExpression: '#UN, #BN'

@@ -2,6 +2,7 @@ import {
 	AuthorizationType,
 	UserPoolDefaultAction
 } from '@aws-cdk/aws-appsync-alpha'
+import { MappingTemplate } from '@aws-cdk/aws-appsync-alpha'
 import { AppSyncApi, StackContext, use } from '@serverless-stack/resources'
 import { Fn } from 'aws-cdk-lib'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
@@ -33,8 +34,42 @@ export function AppApiStack({ stack }: StackContext): AppApiStackOutput {
 				}
 			}
 		},
-		dataSources,
-		resolvers,
+		dataSources: {
+			...dataSources,
+			userDataTable: {
+				type: 'dynamodb',
+				table: resources.userDataTable
+			}
+		},
+		resolvers: {
+			...resolvers,
+			'Mutation setEventBusArn': {
+				dataSource: 'userDataTable',
+				cdk: {
+					resolver: {
+						requestMappingTemplate: MappingTemplate.fromFile(
+							'./stacks/app-api/mapping-templates/setEventBusArn.vtl'
+						),
+						responseMappingTemplate: MappingTemplate.fromFile(
+							'./stacks/app-api/mapping-templates/voidResponse.vtl'
+						)
+					}
+				}
+			},
+			'Mutation setS3BucketName': {
+				dataSource: 'userDataTable',
+				cdk: {
+					resolver: {
+						requestMappingTemplate: MappingTemplate.fromFile(
+							'./stacks/app-api/mapping-templates/setS3BucketName.vtl'
+						),
+						responseMappingTemplate: MappingTemplate.fromFile(
+							'./stacks/app-api/mapping-templates/voidResponse.vtl'
+						)
+					}
+				}
+			}
+		},
 		cdk: {
 			graphqlApi: {
 				authorizationConfig: {
@@ -51,11 +86,17 @@ export function AppApiStack({ stack }: StackContext): AppApiStackOutput {
 			}
 		}
 	})
+
 	appSyncApi.attachPermissions([
 		new PolicyStatement({
 			effect: Effect.ALLOW,
-			actions: ['s3:PutObject'],
+			actions: ['s3:PutObject', 's3:GetObject'],
 			resources: [Fn.join('', [resources.photosBucket.bucketArn, '/*'])]
+		}),
+		new PolicyStatement({
+			effect: Effect.ALLOW,
+			actions: ['s3:PutObject'],
+			resources: ['*']
 		}),
 		new PolicyStatement({
 			effect: Effect.ALLOW,

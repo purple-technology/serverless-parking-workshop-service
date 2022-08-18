@@ -17,7 +17,8 @@ export const handler: AppSyncResolverHandler<{}, Query['api']> = async (
 				username: {
 					S: username
 				}
-			}
+			},
+			AttributesToGet: ['apiKey']
 		})
 		.promise()
 
