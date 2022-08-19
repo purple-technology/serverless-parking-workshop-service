@@ -1,6 +1,7 @@
 import {
 	Auth,
 	Bucket,
+	EventBus,
 	Function,
 	StackContext
 } from '@serverless-stack/resources'
@@ -15,6 +16,7 @@ interface ResourcesStackOutput {
 	auth: Auth
 	userDataTable: Table
 	photosBucket: Bucket
+	eventBus: EventBus
 }
 /**
  *
@@ -27,6 +29,8 @@ export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 	stack.setDefaultFunctionProps({
 		srcPath: 'services'
 	})
+
+	const eventBus = new EventBus(stack, 'EventBus', {})
 
 	const userDataTable = new Table(stack, 'UserData', {
 		fields: {
@@ -121,6 +125,7 @@ export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 
 	return {
 		auth,
+		eventBus,
 		photosBucket,
 		userDataTable
 	}

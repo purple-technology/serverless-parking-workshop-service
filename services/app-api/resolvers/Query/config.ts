@@ -3,11 +3,19 @@ import { AppSyncIdentityCognito, AppSyncResolverHandler } from 'aws-lambda'
 import AWS from 'aws-sdk'
 
 const dynamoDb = new AWS.DynamoDB()
+const eventBridge = new AWS.EventBridge()
 
 export const handler: AppSyncResolverHandler<{}, Query['config']> = async (
 	event
 ) => {
 	const username = (event.identity as AppSyncIdentityCognito).username
+
+	const targets = await eventBridge
+		.listTargetsByRule({
+			EventBusName: `${process.env.EVENT_BUS_NAME}`,
+			Rule: username
+		})
+		.promise()
 
 	const data = await dynamoDb
 		.getItem({
@@ -17,15 +25,12 @@ export const handler: AppSyncResolverHandler<{}, Query['config']> = async (
 					S: username
 				}
 			},
-			AttributesToGet: ['eventBusArn', 's3BucketName']
+			AttributesToGet: ['s3BucketName']
 		})
 		.promise()
 
-	const eventBusArn = data.Item?.eventBusArn?.S ?? null
-	const s3BucketName = data.Item?.s3BucketName?.S ?? null
-
 	return {
-		eventBusArn,
-		s3BucketName
+		eventBusArn: (targets.Targets ?? [])[0]?.Arn ?? null,
+		s3BucketName: data.Item?.s3BucketName?.S ?? null
 	}
 }

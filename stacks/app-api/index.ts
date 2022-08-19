@@ -5,7 +5,13 @@ import {
 import { MappingTemplate } from '@aws-cdk/aws-appsync-alpha'
 import { AppSyncApi, StackContext, use } from '@serverless-stack/resources'
 import { Fn } from 'aws-cdk-lib'
-import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import {
+	Effect,
+	PolicyDocument,
+	PolicyStatement,
+	Role,
+	ServicePrincipal
+} from 'aws-cdk-lib/aws-iam'
 
 import { ResourcesStack } from '../resources'
 import { ServiceApiStack } from '../service-api'
@@ -23,6 +29,21 @@ export function AppApiStack({ stack }: StackContext): AppApiStackOutput {
 		srcPath: 'services'
 	})
 
+	const eventBusRole = new Role(stack, 'EventBusRole', {
+		assumedBy: new ServicePrincipal('events.amazonaws.com'),
+		inlinePolicies: {
+			enPolicy: new PolicyDocument({
+				statements: [
+					new PolicyStatement({
+						effect: Effect.ALLOW,
+						actions: ['events:PutEvents'],
+						resources: ['*']
+					})
+				]
+			})
+		}
+	})
+
 	const appSyncApi = new AppSyncApi(stack, 'AppGraphqlApi', {
 		schema: 'services/app-api/schema.graphql',
 		defaults: {
@@ -30,7 +51,9 @@ export function AppApiStack({ stack }: StackContext): AppApiStackOutput {
 				environment: {
 					PHOTOS_BUCKET_NAME: resources.photosBucket.bucketName,
 					USER_DATA_TABLE_NAME: resources.userDataTable.tableName,
-					SERVICE_API_ID: serviceApi.appSyncApi.apiId
+					SERVICE_API_ID: serviceApi.appSyncApi.apiId,
+					EVENT_BUS_ROLE_ARN: eventBusRole.roleArn,
+					EVENT_BUS_NAME: resources.eventBus.eventBusName
 				}
 			}
 		},
@@ -43,19 +66,6 @@ export function AppApiStack({ stack }: StackContext): AppApiStackOutput {
 		},
 		resolvers: {
 			...resolvers,
-			'Mutation setEventBusArn': {
-				dataSource: 'userDataTable',
-				cdk: {
-					resolver: {
-						requestMappingTemplate: MappingTemplate.fromFile(
-							'./stacks/app-api/mapping-templates/setEventBusArn.vtl'
-						),
-						responseMappingTemplate: MappingTemplate.fromFile(
-							'./stacks/app-api/mapping-templates/voidResponse.vtl'
-						)
-					}
-				}
-			},
 			'Mutation setS3BucketName': {
 				dataSource: 'userDataTable',
 				cdk: {
@@ -107,6 +117,25 @@ export function AppApiStack({ stack }: StackContext): AppApiStackOutput {
 			effect: Effect.ALLOW,
 			actions: ['appsync:CreateApiKey'],
 			resources: ['*']
+		}),
+		new PolicyStatement({
+			effect: Effect.ALLOW,
+			actions: ['iam:PassRole'],
+			resources: [eventBusRole.roleArn]
+		}),
+		new PolicyStatement({
+			effect: Effect.ALLOW,
+			actions: [
+				'events:PutRule',
+				'events:DeleteRule',
+				'events:PutTargets',
+				'events:ListTargetsByRule'
+			],
+			resources: [
+				Fn.sub(
+					'arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${eventBusName}/*'
+				)
+			]
 		})
 	])
 

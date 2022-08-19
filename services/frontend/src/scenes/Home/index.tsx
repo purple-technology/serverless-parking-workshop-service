@@ -1,8 +1,16 @@
 import { CognitoUser } from '@aws-amplify/auth'
 import { createGraphiQLFetcher } from '@graphiql/toolkit'
-import { ApiKeyQuery } from '@packages/app-graphql-types'
-import { useQuery } from '@tanstack/react-query'
+import {
+	ApiKeyQuery,
+	EventBusArnMutation,
+	EventBusArnMutationVariables,
+	S3BucketNameMutation,
+	S3BucketNameMutationVariables
+} from '@packages/app-graphql-types'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { API, Auth } from 'aws-amplify'
+import { Button } from 'baseui/button'
+import { Input } from 'baseui/input'
 import { Spinner } from 'baseui/spinner'
 import { Tab, Tabs } from 'baseui/tabs'
 import GraphiQL from 'graphiql'
@@ -18,19 +26,76 @@ const Box = styled.div`
 
 export const Home: React.FC = () => {
 	const [user, setUser] = useState<CognitoUser | undefined>()
-	const [activeKey, setActiveKey] = useState<string | number>('0')
+	const [activeTab, setActiveTab] = useState<string | number>('0')
+
+	const [eventBusArn, setEventBusArn] = useState<string | undefined>()
+	const [s3BucketName, setS3BucketName] = useState<string | undefined>()
+
 	const router = useRouter()
 
-	const apiKeyQuery = useQuery(['apiKey'], async () => {
+	const apiKeyQuery = useQuery<ApiKeyQuery>(
+		['apiKey'],
+		async () => {
+			const { data } = (await API.graphql({
+				query: /* GraphQL */ `
+					query ApiKey {
+						api {
+							key
+						}
+						config {
+							eventBusArn
+							s3BucketName
+						}
+					}
+				`
+			})) as { data: ApiKeyQuery }
+			return data
+		},
+		{
+			onSuccess: ({ config }) => {
+				if (typeof eventBusArn === 'undefined') {
+					setEventBusArn(config.eventBusArn ?? '')
+				}
+				if (typeof s3BucketName === 'undefined') {
+					setS3BucketName(config.s3BucketName ?? '')
+				}
+			}
+		}
+	)
+
+	const eventBusArnMutation = useMutation<
+		EventBusArnMutation,
+		unknown,
+		EventBusArnMutationVariables
+	>(['eventBusArn'], async (variables) => {
 		const { data } = (await API.graphql({
 			query: /* GraphQL */ `
-				query ApiKey {
-					api {
-						key
+				mutation EventBusArn($eventBusArn: String!) {
+					setEventBusArn(eventBusArn: $eventBusArn) {
+						success
 					}
 				}
-			`
-		})) as { data: ApiKeyQuery }
+			`,
+			variables
+		})) as { data: EventBusArnMutation }
+		return data
+	})
+
+	const s3BucketNameMutation = useMutation<
+		S3BucketNameMutation,
+		unknown,
+		S3BucketNameMutationVariables
+	>(['s3BucketName'], async (variables) => {
+		const { data } = (await API.graphql({
+			query: /* GraphQL */ `
+				mutation S3BucketName($s3BucketName: String!) {
+					setS3BucketName(s3BucketName: $s3BucketName) {
+						success
+					}
+				}
+			`,
+			variables
+		})) as { data: S3BucketNameMutation }
 		return data
 	})
 
@@ -55,9 +120,9 @@ export const Home: React.FC = () => {
 
 	return (
 		<Tabs
-			activeKey={activeKey}
+			activeKey={activeTab}
 			onChange={({ activeKey }): void => {
-				setActiveKey(activeKey)
+				setActiveTab(activeKey)
 			}}
 			overrides={{
 				Root: {
@@ -67,7 +132,10 @@ export const Home: React.FC = () => {
 				},
 				TabContent: {
 					style: {
-						padding: '0',
+						paddingTop: '0',
+						paddingLeft: '0',
+						paddingRight: '0',
+						paddingBottom: '0',
 						borderTop: 'solid 1px #cfd0d0',
 						height: '100%'
 					}
@@ -91,7 +159,34 @@ export const Home: React.FC = () => {
 				/>
 			</Tab>
 			<Tab title="AWS Settings">
-				<div>AWS settings</div>
+				<Input
+					value={eventBusArn}
+					onChange={(e): void => {
+						setEventBusArn(e.currentTarget.value)
+					}}
+					placeholder="Event Bus Arn"
+				/>
+				<Button
+					onClick={(): void => {
+						eventBusArnMutation.mutate({ eventBusArn: eventBusArn ?? '' })
+					}}
+				>
+					Set
+				</Button>
+				<Input
+					value={s3BucketName}
+					onChange={(e): void => {
+						setS3BucketName(e.currentTarget.value)
+					}}
+					placeholder="S3 Bucket Name"
+				/>
+				<Button
+					onClick={(): void => {
+						s3BucketNameMutation.mutate({ s3BucketName: s3BucketName ?? '' })
+					}}
+				>
+					Set
+				</Button>
 			</Tab>
 			<Tab title="Amazon S3">
 				<div>S3</div>

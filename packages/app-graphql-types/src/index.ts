@@ -64,4 +64,27 @@ export type ApiKeyQueryVariables = Exact<{ [key: string]: never }>
 export type ApiKeyQuery = {
 	__typename?: 'Query'
 	api: { __typename?: 'Api'; key: string }
+	config: {
+		__typename?: 'Config'
+		eventBusArn?: string | null
+		s3BucketName?: string | null
+	}
+}
+
+export type EventBusArnMutationVariables = Exact<{
+	eventBusArn: Scalars['String']
+}>
+
+export type EventBusArnMutation = {
+	__typename?: 'Mutation'
+	setEventBusArn?: { __typename?: 'Void'; success: boolean } | null
+}
+
+export type S3BucketNameMutationVariables = Exact<{
+	s3BucketName: Scalars['String']
+}>
+
+export type S3BucketNameMutation = {
+	__typename?: 'Mutation'
+	setS3BucketName?: { __typename?: 'Void'; success: boolean } | null
 }
