@@ -37,9 +37,7 @@ export const handler: AppSyncResolverHandler<
 	const template = EventBus.templates[event.arguments.eventId]
 
 	if (typeof template === 'undefined') {
-		return {
-			success: false
-		}
+		throw new Error(`No template for event "${event.arguments.eventId}" found.`)
 	}
 
 	const templateEvent = EventBus.templates[event.arguments.eventId](username)

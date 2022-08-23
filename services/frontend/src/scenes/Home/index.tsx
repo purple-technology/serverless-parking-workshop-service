@@ -1,3 +1,4 @@
+import { GraphQLResult } from '@aws-amplify/api-graphql/lib/types'
 import { CognitoUser } from '@aws-amplify/auth'
 import { createGraphiQLFetcher } from '@graphiql/toolkit'
 import {
@@ -14,10 +15,14 @@ import {
 import { templates } from '@packages/event-bus'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { API, Auth } from 'aws-amplify'
+import { Theme } from 'baseui'
+import { Block } from 'baseui/block'
 import { Button } from 'baseui/button'
+import { Card, StyledAction, StyledBody } from 'baseui/card'
 import { FlexGrid, FlexGridItem } from 'baseui/flex-grid'
 import { Input } from 'baseui/input'
 import { Option, Select } from 'baseui/select'
+import { DURATION, SnackbarProvider, useSnackbar } from 'baseui/snackbar'
 import { Spinner } from 'baseui/spinner'
 import { Tab, Tabs } from 'baseui/tabs-motion'
 import GraphiQL from 'graphiql'
@@ -46,13 +51,38 @@ const tabOverrides = {
 	}
 } as const
 
+const cardOverrides = {
+	Root: {
+		style: {
+			width: '60%',
+			margin: 'auto'
+		}
+	}
+} as const
+
 const itemProps = {
 	display: 'flex',
 	alignItems: 'center',
 	justifyContent: 'center'
 } as const
 
-export const Home: React.FC = () => {
+const snackbarNegativeOverrides = {
+	Root: {
+		style: ({ $theme }: { $theme: Theme }) => ({
+			backgroundColor: $theme.colors.negative
+		})
+	}
+} as const
+
+const snackbarPositiveOverrides = {
+	Root: {
+		style: ({ $theme }: { $theme: Theme }) => ({
+			backgroundColor: $theme.colors.positive
+		})
+	}
+} as const
+
+export const HomeChild: React.FC = () => {
 	const [user, setUser] = useState<CognitoUser | undefined>()
 	const [activeTab, setActiveTab] = useState<string | number>('0')
 
@@ -68,6 +98,8 @@ export const Home: React.FC = () => {
 	const [eventSelectValue, setEventSelectValue] = useState<Option | undefined>()
 
 	const router = useRouter()
+
+	const { enqueue } = useSnackbar()
 
 	const apiKeyQuery = useQuery<ApiKeyQuery>(
 		['apiKey'],
@@ -101,75 +133,171 @@ export const Home: React.FC = () => {
 
 	const eventBusArnMutation = useMutation<
 		EventBusArnMutation,
-		unknown,
+		GraphQLResult<EventBusArnMutation>,
 		EventBusArnMutationVariables
-	>(['eventBusArn'], async (variables) => {
-		const { data } = (await API.graphql({
-			query: /* GraphQL */ `
-				mutation EventBusArn($eventBusArn: String!) {
-					setEventBusArn(eventBusArn: $eventBusArn) {
-						success
+	>(
+		['eventBusArn'],
+		async (variables) => {
+			const { data } = (await API.graphql({
+				query: /* GraphQL */ `
+					mutation EventBusArn($eventBusArn: String!) {
+						setEventBusArn(eventBusArn: $eventBusArn) {
+							success
+						}
 					}
-				}
-			`,
-			variables
-		})) as { data: EventBusArnMutation }
-		return data
-	})
+				`,
+				variables
+			})) as { data: EventBusArnMutation }
+			return data
+		},
+		{
+			onError: ({ errors }) => {
+				const error = (errors ?? [])[0]
+				enqueue(
+					{
+						message: `Error: ${error.message}`,
+						overrides: snackbarNegativeOverrides
+					},
+					DURATION.long
+				)
+			},
+			onSuccess: () => {
+				enqueue(
+					{
+						message: 'Event Bus ARN saved.',
+						overrides: snackbarPositiveOverrides
+					},
+					DURATION.short
+				)
+			}
+		}
+	)
 
 	const s3BucketNameMutation = useMutation<
 		S3BucketNameMutation,
-		unknown,
+		GraphQLResult<S3BucketNameMutation>,
 		S3BucketNameMutationVariables
-	>(['s3BucketName'], async (variables) => {
-		const { data } = (await API.graphql({
-			query: /* GraphQL */ `
-				mutation S3BucketName($s3BucketName: String!) {
-					setS3BucketName(s3BucketName: $s3BucketName) {
-						success
+	>(
+		['s3BucketName'],
+		async (variables) => {
+			const { data } = (await API.graphql({
+				query: /* GraphQL */ `
+					mutation S3BucketName($s3BucketName: String!) {
+						setS3BucketName(s3BucketName: $s3BucketName) {
+							success
+						}
 					}
-				}
-			`,
-			variables
-		})) as { data: S3BucketNameMutation }
-		return data
-	})
+				`,
+				variables
+			})) as { data: S3BucketNameMutation }
+			return data
+		},
+		{
+			onError: ({ errors }) => {
+				const error = (errors ?? [])[0]
+				enqueue(
+					{
+						message: `Error: ${error.message}`,
+						overrides: snackbarNegativeOverrides
+					},
+					DURATION.long
+				)
+			},
+			onSuccess: () => {
+				enqueue(
+					{
+						message: 'S3 Bucket Name saved.',
+						overrides: snackbarPositiveOverrides
+					},
+					DURATION.short
+				)
+			}
+		}
+	)
 
 	const copyS3ObjectMutation = useMutation<
 		CopyObjectMutation,
-		unknown,
+		GraphQLResult<CopyObjectMutation>,
 		CopyObjectMutationVariables
-	>(['copyObject'], async (variables) => {
-		const { data } = (await API.graphql({
-			query: /* GraphQL */ `
-				mutation CopyObject($objectId: ID!) {
-					copyS3Object(objectId: $objectId) {
-						success
+	>(
+		['copyObject'],
+		async (variables) => {
+			const { data } = (await API.graphql({
+				query: /* GraphQL */ `
+					mutation CopyObject($objectId: ID!) {
+						copyS3Object(objectId: $objectId) {
+							success
+						}
 					}
-				}
-			`,
-			variables
-		})) as { data: CopyObjectMutation }
-		return data
-	})
+				`,
+				variables
+			})) as { data: CopyObjectMutation }
+			return data
+		},
+		{
+			onError: ({ errors }) => {
+				const error = (errors ?? [])[0]
+				enqueue(
+					{
+						message: `Error: ${error.message}`,
+						overrides: snackbarNegativeOverrides
+					},
+					DURATION.long
+				)
+			},
+			onSuccess: () => {
+				enqueue(
+					{
+						message: 'Event sent.',
+						overrides: snackbarPositiveOverrides
+					},
+					DURATION.short
+				)
+			}
+		}
+	)
 
 	const sendEventMutation = useMutation<
 		SendEventMutation,
-		unknown,
+		GraphQLResult<SendEventMutation>,
 		SendEventMutationVariables
-	>(['sendEvent'], async (variables) => {
-		const { data } = (await API.graphql({
-			query: /* GraphQL */ `
-				mutation SendEvent($eventId: ID!) {
-					sendEvent(eventId: $eventId) {
-						success
+	>(
+		['sendEvent'],
+		async (variables) => {
+			const { data } = (await API.graphql({
+				query: /* GraphQL */ `
+					mutation SendEvent($eventId: ID!) {
+						sendEvent(eventId: $eventId) {
+							success
+						}
 					}
-				}
-			`,
-			variables
-		})) as { data: SendEventMutation }
-		return data
-	})
+				`,
+				variables
+			})) as { data: SendEventMutation }
+			return data
+		},
+		{
+			onError: ({ errors }) => {
+				const error = (errors ?? [])[0]
+				enqueue(
+					{
+						message: `Error: ${error.message}`,
+						overrides: snackbarNegativeOverrides
+					},
+					DURATION.long
+				)
+			},
+			onSuccess: () => {
+				enqueue(
+					{
+						message: 'Event sent.',
+						overrides: snackbarPositiveOverrides
+					},
+					DURATION.short
+				)
+			}
+		}
+	)
 
 	useEffect(() => {
 		Auth.currentAuthenticatedUser()
@@ -222,48 +350,67 @@ export const Home: React.FC = () => {
 				/>
 			</Tab>
 			<Tab title="AWS Settings" overrides={tabOverrides}>
-				<Input
-					value={eventBusArn ?? ''}
-					onChange={(e): void => {
-						setEventBusArn(e.currentTarget.value)
-					}}
-					placeholder="Event Bus Arn"
-				/>
-				<Button
-					onClick={(): void => {
-						eventBusArnMutation.mutate({ eventBusArn: eventBusArn ?? '' })
-					}}
-				>
-					Set
-				</Button>
-				<Input
-					value={s3BucketName ?? ''}
-					onChange={(e): void => {
-						setS3BucketName(e.currentTarget.value)
-					}}
-					placeholder="S3 Bucket Name"
-				/>
-				<Button
-					onClick={(): void => {
-						s3BucketNameMutation.mutate({ s3BucketName: s3BucketName ?? '' })
-					}}
-				>
-					Set
-				</Button>
+				<Block marginTop="20px" />
+				<Card title="Amazon EventBridge ARN" overrides={cardOverrides}>
+					<StyledBody>
+						<Input
+							value={eventBusArn ?? ''}
+							onChange={(e): void => setEventBusArn(e.currentTarget.value)}
+							placeholder="arn:aws:events:eu-central-1:000000000000:event-bus/some-event-bus-name"
+						/>
+					</StyledBody>
+					<StyledAction>
+						<Button
+							onClick={(): void =>
+								eventBusArnMutation.mutate({
+									eventBusArn: eventBusArn ?? ''
+								})
+							}
+							size="compact"
+						>
+							Save
+						</Button>
+					</StyledAction>
+				</Card>
+				<Block marginTop="20px" />
+				<Card title="Amazon S3 Bucket Name" overrides={cardOverrides}>
+					<StyledBody>
+						<Input
+							value={s3BucketName ?? ''}
+							onChange={(e): void => setS3BucketName(e.currentTarget.value)}
+							placeholder="some-photos-bucket-name-here"
+						/>
+					</StyledBody>
+					<StyledAction>
+						<Button
+							onClick={(): void =>
+								s3BucketNameMutation.mutate({
+									s3BucketName: s3BucketName ?? ''
+								})
+							}
+							size="compact"
+						>
+							Save
+						</Button>
+					</StyledAction>
+				</Card>
 			</Tab>
 			<Tab title="Amazon S3" overrides={tabOverrides}>
-				<Button
-					onClick={(): void => {
-						copyS3ObjectMutation.mutate({ objectId: s3SelectedImage })
-					}}
-				>
-					Upload image to S3
-				</Button>
+				<Block $style={{ textAlign: 'center' }} paddingTop="20px">
+					<Button
+						onClick={(): void => {
+							copyS3ObjectMutation.mutate({ objectId: s3SelectedImage })
+						}}
+					>
+						Upload selected image
+					</Button>
+				</Block>
 				<FlexGrid
 					flexGridColumnCount={3}
 					flexGridColumnGap="scale800"
 					flexGridRowGap="scale800"
 					height="80vh"
+					padding="20px"
 				>
 					{['1', '2', '3', '4', '5', '6'].map((id) => (
 						<FlexGridItem key={id} {...itemProps} onClick={s3ImageOnClick(id)}>
@@ -273,8 +420,9 @@ export const Home: React.FC = () => {
 								style={{
 									width: '100%',
 									cursor: 'pointer',
-									border: `solid 2px ${
-										s3SelectedImage === id ? 'blue' : 'black'
+									borderRadius: '0.5em',
+									border: `solid 5px ${
+										s3SelectedImage === id ? '#3a3a3a' : '#e2e2e2'
 									}`
 								}}
 							/>
@@ -321,3 +469,9 @@ export const Home: React.FC = () => {
 		</Tabs>
 	)
 }
+
+export const Home: React.FC = () => (
+	<SnackbarProvider placement="bottom">
+		<HomeChild />
+	</SnackbarProvider>
+)

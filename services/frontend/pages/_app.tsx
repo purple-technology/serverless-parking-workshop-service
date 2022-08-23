@@ -20,7 +20,8 @@ if (typeof window !== 'undefined') {
 
 const GlobalStyles = createGlobalStyle`
 body {
-	overflow: hidden
+	overflow: hidden;
+	background-color: #f7f7f7;
 }
 `
 

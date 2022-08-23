@@ -27,9 +27,9 @@ export const handler: AppSyncResolverHandler<
 		typeof data.Item === 'undefined' ||
 		typeof data.Item?.s3BucketName?.S === 'undefined'
 	) {
-		return {
-			success: false
-		}
+		throw new Error(
+			'No S3 bucket found, make sure to set it in "AWS Settings" tab.'
+		)
 	}
 
 	try {
@@ -60,9 +60,7 @@ export const handler: AppSyncResolverHandler<
 			})
 		)
 
-		return {
-			success: false
-		}
+		throw err
 	}
 
 	return {
