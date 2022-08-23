@@ -93,7 +93,7 @@ export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 	})
 
 	const photosBucket = new Bucket(stack, 'Photos', {
-		name: `${kebabCase(stack.stackName)}.photos-2`,
+		name: `${kebabCase(stack.stackName)}.photos`,
 		cors: [
 			{
 				allowedHeaders: ['*'],
