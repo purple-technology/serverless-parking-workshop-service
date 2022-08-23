@@ -13,7 +13,7 @@ export const handler: AppSyncResolverHandler<{}, Query['config']> = async (
 	const targets = await eventBridge
 		.listTargetsByRule({
 			EventBusName: `${process.env.EVENT_BUS_NAME}`,
-			Rule: username
+			Rule: `${username}-all`
 		})
 		.promise()
 

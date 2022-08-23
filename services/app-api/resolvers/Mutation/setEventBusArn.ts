@@ -2,11 +2,11 @@ import {
 	Mutation,
 	MutationSetEventBusArnArgs
 } from '@packages/app-graphql-types'
+import * as EventBus from '@packages/event-bus'
 import { AppSyncIdentityCognito, AppSyncResolverHandler } from 'aws-lambda'
 import AWS from 'aws-sdk'
 
 const eventBridge = new AWS.EventBridge()
-const dynamoDb = new AWS.DynamoDB()
 
 export const handler: AppSyncResolverHandler<
 	MutationSetEventBusArnArgs,
@@ -14,31 +14,25 @@ export const handler: AppSyncResolverHandler<
 > = async (event) => {
 	const username = (event.identity as AppSyncIdentityCognito).username
 
-	const rule = await eventBridge
+	await eventBridge
 		.putRule({
-			Name: username,
+			Name: `${username}-all`,
 			EventBusName: `${process.env.EVENT_BUS_NAME}`,
-			Description: `Event bus rule for ${username}`,
+			Description: `Event bus rule for all service events for ${username}`,
 			EventPattern: JSON.stringify({
-				source: [
-					'human-verification.${file(macros.js):getExternalServiceStage}.verification'
-				],
-				'detail-type': ['finished'],
+				source: [EventBus.source],
+				'detail-type': EventBus.detailTypes,
 				detail: {
-					target: [
-						'my-axiory.onboarding.lightLiveUser',
-						'my-axiory.onboarding.lightLiveUser.gracePeriod'
-					],
-					targetId: ['${self:provider.stage}']
+					targetUser: [EventBus.allUsersDetailValue]
 				}
 			})
 		})
 		.promise()
 
-	const target = await eventBridge
+	await eventBridge
 		.putTargets({
 			EventBusName: `${process.env.EVENT_BUS_NAME}`,
-			Rule: username,
+			Rule: `${username}-all`,
 			Targets: [
 				{
 					Id: username,
@@ -49,25 +43,32 @@ export const handler: AppSyncResolverHandler<
 		})
 		.promise()
 
-	console.log({ rule, target })
+	await eventBridge
+		.putRule({
+			Name: `${username}-personal`,
+			EventBusName: `${process.env.EVENT_BUS_NAME}`,
+			Description: `Event bus rule for personal service events for ${username}`,
+			EventPattern: JSON.stringify({
+				source: [EventBus.source],
+				'detail-type': EventBus.detailTypes,
+				detail: {
+					targetUser: [username]
+				}
+			})
+		})
+		.promise()
 
-	await dynamoDb
-		.updateItem({
-			TableName: `${process.env.USER_DATA_TABLE_NAME}`,
-			Key: {
-				username: {
-					S: username
+	await eventBridge
+		.putTargets({
+			EventBusName: `${process.env.EVENT_BUS_NAME}`,
+			Rule: `${username}-personal`,
+			Targets: [
+				{
+					Id: username,
+					Arn: event.arguments.eventBusArn,
+					RoleArn: `${process.env.EVENT_BUS_ROLE_ARN}`
 				}
-			},
-			ExpressionAttributeNames: {
-				'#eventBusArn': 'eventBusArn'
-			},
-			ExpressionAttributeValues: {
-				':eventBusArn': {
-					S: event.arguments.eventBusArn
-				}
-			},
-			UpdateExpression: 'SET #eventBusArn = :eventBusArn'
+			]
 		})
 		.promise()
 

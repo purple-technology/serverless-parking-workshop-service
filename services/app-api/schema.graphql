@@ -18,6 +18,7 @@ type Query {
 
 type Mutation {
 	copyS3Object(objectId: ID!): Void!
+	sendEvent(eventId: ID!): Void!
 	setEventBusArn(eventBusArn: String!): Void
 	setS3BucketName(s3BucketName: String!): Void
 }

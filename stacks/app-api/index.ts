@@ -133,9 +133,17 @@ export function AppApiStack({ stack }: StackContext): AppApiStackOutput {
 			],
 			resources: [
 				Fn.sub(
-					'arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${eventBusName}/*'
+					'arn:aws:events:${AWS::Region}:${AWS::AccountId}:rule/${eventBusName}/*',
+					{
+						eventBusName: resources.eventBus.eventBusName
+					}
 				)
 			]
+		}),
+		new PolicyStatement({
+			effect: Effect.ALLOW,
+			actions: ['events:PutEvents'],
+			resources: [resources.eventBus.eventBusArn]
 		})
 	])
 

@@ -2,20 +2,29 @@ import { CognitoUser } from '@aws-amplify/auth'
 import { createGraphiQLFetcher } from '@graphiql/toolkit'
 import {
 	ApiKeyQuery,
+	CopyObjectMutation,
+	CopyObjectMutationVariables,
 	EventBusArnMutation,
 	EventBusArnMutationVariables,
 	S3BucketNameMutation,
-	S3BucketNameMutationVariables
+	S3BucketNameMutationVariables,
+	SendEventMutation,
+	SendEventMutationVariables
 } from '@packages/app-graphql-types'
+import { templates } from '@packages/event-bus'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { API, Auth } from 'aws-amplify'
 import { Button } from 'baseui/button'
+import { FlexGrid, FlexGridItem } from 'baseui/flex-grid'
 import { Input } from 'baseui/input'
+import { Option, Select } from 'baseui/select'
 import { Spinner } from 'baseui/spinner'
-import { Tab, Tabs } from 'baseui/tabs'
+import { Tab, Tabs } from 'baseui/tabs-motion'
 import GraphiQL from 'graphiql'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
+import SyntaxHighlighter from 'react-syntax-highlighter'
+import github from 'react-syntax-highlighter/dist/cjs/styles/hljs/github'
 import styled from 'styled-components'
 
 const Box = styled.div`
@@ -24,12 +33,39 @@ const Box = styled.div`
 	margin: 10px auto;
 `
 
+const tabOverrides = {
+	TabPanel: {
+		style: {
+			paddingTop: '0',
+			paddingLeft: '0',
+			paddingRight: '0',
+			paddingBottom: '0',
+			borderTop: 'solid 1px #cfd0d0',
+			height: '100%'
+		}
+	}
+} as const
+
+const itemProps = {
+	display: 'flex',
+	alignItems: 'center',
+	justifyContent: 'center'
+} as const
+
 export const Home: React.FC = () => {
 	const [user, setUser] = useState<CognitoUser | undefined>()
 	const [activeTab, setActiveTab] = useState<string | number>('0')
 
+	// AWS Settings
 	const [eventBusArn, setEventBusArn] = useState<string | undefined>()
 	const [s3BucketName, setS3BucketName] = useState<string | undefined>()
+
+	// S3
+	const [s3SelectedImage, setS3SelectedImage] = useState<string>('1')
+	const s3ImageOnClick = (imageId: string) => () => setS3SelectedImage(imageId)
+
+	// EventBridge
+	const [eventSelectValue, setEventSelectValue] = useState<Option | undefined>()
 
 	const router = useRouter()
 
@@ -99,6 +135,42 @@ export const Home: React.FC = () => {
 		return data
 	})
 
+	const copyS3ObjectMutation = useMutation<
+		CopyObjectMutation,
+		unknown,
+		CopyObjectMutationVariables
+	>(['copyObject'], async (variables) => {
+		const { data } = (await API.graphql({
+			query: /* GraphQL */ `
+				mutation CopyObject($objectId: ID!) {
+					copyS3Object(objectId: $objectId) {
+						success
+					}
+				}
+			`,
+			variables
+		})) as { data: CopyObjectMutation }
+		return data
+	})
+
+	const sendEventMutation = useMutation<
+		SendEventMutation,
+		unknown,
+		SendEventMutationVariables
+	>(['sendEvent'], async (variables) => {
+		const { data } = (await API.graphql({
+			query: /* GraphQL */ `
+				mutation SendEvent($eventId: ID!) {
+					sendEvent(eventId: $eventId) {
+						success
+					}
+				}
+			`,
+			variables
+		})) as { data: SendEventMutation }
+		return data
+	})
+
 	useEffect(() => {
 		Auth.currentAuthenticatedUser()
 			.then((user) => setUser(user))
@@ -120,6 +192,7 @@ export const Home: React.FC = () => {
 
 	return (
 		<Tabs
+			renderAll
 			activeKey={activeTab}
 			onChange={({ activeKey }): void => {
 				setActiveTab(activeKey)
@@ -129,20 +202,10 @@ export const Home: React.FC = () => {
 					style: {
 						height: '100vh'
 					}
-				},
-				TabContent: {
-					style: {
-						paddingTop: '0',
-						paddingLeft: '0',
-						paddingRight: '0',
-						paddingBottom: '0',
-						borderTop: 'solid 1px #cfd0d0',
-						height: '100%'
-					}
 				}
 			}}
 		>
-			<Tab title="GraphQL API">
+			<Tab title="GraphQL API" overrides={tabOverrides}>
 				<GraphiQL
 					headers={JSON.stringify(
 						{
@@ -158,9 +221,9 @@ export const Home: React.FC = () => {
 					editorTheme="codemirror"
 				/>
 			</Tab>
-			<Tab title="AWS Settings">
+			<Tab title="AWS Settings" overrides={tabOverrides}>
 				<Input
-					value={eventBusArn}
+					value={eventBusArn ?? ''}
 					onChange={(e): void => {
 						setEventBusArn(e.currentTarget.value)
 					}}
@@ -174,7 +237,7 @@ export const Home: React.FC = () => {
 					Set
 				</Button>
 				<Input
-					value={s3BucketName}
+					value={s3BucketName ?? ''}
 					onChange={(e): void => {
 						setS3BucketName(e.currentTarget.value)
 					}}
@@ -188,15 +251,72 @@ export const Home: React.FC = () => {
 					Set
 				</Button>
 			</Tab>
-			<Tab title="Amazon S3">
-				<div>S3</div>
-				<img
-					src={`${process.env.NEXT_PUBLIC_S3_PHOTO_OBJECT_BASE_URL}/1.jpg`}
-					alt="1.jpg"
-				/>
+			<Tab title="Amazon S3" overrides={tabOverrides}>
+				<Button
+					onClick={(): void => {
+						copyS3ObjectMutation.mutate({ objectId: s3SelectedImage })
+					}}
+				>
+					Upload image to S3
+				</Button>
+				<FlexGrid
+					flexGridColumnCount={3}
+					flexGridColumnGap="scale800"
+					flexGridRowGap="scale800"
+					height="80vh"
+				>
+					{['1', '2', '3', '4', '5', '6'].map((id) => (
+						<FlexGridItem key={id} {...itemProps} onClick={s3ImageOnClick(id)}>
+							<img
+								src={`${process.env.NEXT_PUBLIC_S3_PHOTO_OBJECT_BASE_URL}/${id}.jpg`}
+								alt={`${id}.jpg`}
+								style={{
+									width: '100%',
+									cursor: 'pointer',
+									border: `solid 2px ${
+										s3SelectedImage === id ? 'blue' : 'black'
+									}`
+								}}
+							/>
+						</FlexGridItem>
+					))}
+				</FlexGrid>
 			</Tab>
-			<Tab title="Amazon EventBridge">
+			<Tab title="Amazon EventBridge" overrides={tabOverrides}>
 				<div>EventBridge</div>
+				<Select
+					options={[
+						{ label: 'Gate Opened', id: '1' },
+						{ label: 'Gate Closed', id: '2' },
+						{ label: 'Reservation Created', id: '3' },
+						{ label: 'Reservation Expired', id: '4' }
+					]}
+					value={eventSelectValue ? [eventSelectValue] : []}
+					placeholder="Choose event"
+					onChange={(params): void => {
+						if (params.type === 'select') {
+							setEventSelectValue(params.value[0])
+						}
+					}}
+				/>
+				<SyntaxHighlighter language="javascript" style={github}>
+					{typeof eventSelectValue !== 'undefined'
+						? JSON.stringify(
+								templates[`${eventSelectValue.id}`](user.getUsername()),
+								null,
+								2
+						  )
+						: ''}
+				</SyntaxHighlighter>
+
+				<Button
+					disabled={typeof eventSelectValue === 'undefined'}
+					onClick={(): void => {
+						sendEventMutation.mutate({ eventId: `${eventSelectValue?.id}` })
+					}}
+				>
+					Send Event
+				</Button>
 			</Tab>
 		</Tabs>
 	)

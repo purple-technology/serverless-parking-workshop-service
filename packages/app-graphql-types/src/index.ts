@@ -32,12 +32,17 @@ export type Config = {
 export type Mutation = {
 	__typename?: 'Mutation'
 	copyS3Object: Void
+	sendEvent: Void
 	setEventBusArn?: Maybe<Void>
 	setS3BucketName?: Maybe<Void>
 }
 
 export type MutationCopyS3ObjectArgs = {
 	objectId: Scalars['ID']
+}
+
+export type MutationSendEventArgs = {
+	eventId: Scalars['ID']
 }
 
 export type MutationSetEventBusArnArgs = {
@@ -87,4 +92,22 @@ export type S3BucketNameMutationVariables = Exact<{
 export type S3BucketNameMutation = {
 	__typename?: 'Mutation'
 	setS3BucketName?: { __typename?: 'Void'; success: boolean } | null
+}
+
+export type CopyObjectMutationVariables = Exact<{
+	objectId: Scalars['ID']
+}>
+
+export type CopyObjectMutation = {
+	__typename?: 'Mutation'
+	copyS3Object: { __typename?: 'Void'; success: boolean }
+}
+
+export type SendEventMutationVariables = Exact<{
+	eventId: Scalars['ID']
+}>
+
+export type SendEventMutation = {
+	__typename?: 'Mutation'
+	sendEvent: { __typename?: 'Void'; success: boolean }
 }
