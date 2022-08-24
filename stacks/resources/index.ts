@@ -6,7 +6,7 @@ import {
 	StackContext
 } from '@serverless-stack/resources'
 import { Table } from '@serverless-stack/resources'
-import { Fn } from 'aws-cdk-lib'
+import { Fn, RemovalPolicy } from 'aws-cdk-lib'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 import { BucketAccessControl } from 'aws-cdk-lib/aws-s3'
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment'
@@ -25,7 +25,10 @@ interface ResourcesStackOutput {
  * @param {StackContext} { stack }
  * @returns {ResourcesStackOutput}
  */
-export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
+export function ResourcesStack({
+	stack,
+	app
+}: StackContext): ResourcesStackOutput {
 	stack.setDefaultFunctionProps({
 		srcPath: 'services'
 	})
@@ -94,6 +97,13 @@ export function ResourcesStack({ stack }: StackContext): ResourcesStackOutput {
 
 	const photosBucket = new Bucket(stack, 'Photos', {
 		name: `${kebabCase(stack.stackName)}.photos`,
+		cdk: {
+			bucket: {
+				autoDeleteObjects: app.stage !== 'master',
+				removalPolicy:
+					app.stage === 'master' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY
+			}
+		},
 		cors: [
 			{
 				allowedHeaders: ['*'],
