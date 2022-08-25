@@ -191,6 +191,7 @@ export const CameraScene: React.FC = () => {
 			<StyledBody>
 				<SmallBox>
 					<Camera
+						facingMode="environment"
 						ref={camera}
 						aspectRatio={16 / 9}
 						errorMessages={{
