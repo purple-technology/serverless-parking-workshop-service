@@ -1,3 +1,4 @@
+import { Camera } from '@packages/app-graphql-types'
 import {
 	Auth,
 	Bucket,
@@ -6,10 +7,10 @@ import {
 	StackContext
 } from '@serverless-stack/resources'
 import { Table } from '@serverless-stack/resources'
-import { Fn, RemovalPolicy } from 'aws-cdk-lib'
+import { Duration, Fn, RemovalPolicy } from 'aws-cdk-lib'
 import { CfnUserPoolGroup } from 'aws-cdk-lib/aws-cognito'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
-import { BucketAccessControl } from 'aws-cdk-lib/aws-s3'
+import { BucketAccessControl, LifecycleRule } from 'aws-cdk-lib/aws-s3'
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment'
 import kebabCase from 'lodash.kebabcase'
 
@@ -118,7 +119,14 @@ export function ResourcesStack({
 			bucket: {
 				autoDeleteObjects: app.stage !== 'master',
 				removalPolicy:
-					app.stage === 'master' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY
+					app.stage === 'master' ? RemovalPolicy.RETAIN : RemovalPolicy.DESTROY,
+				lifecycleRules: Object.values(Camera).map<LifecycleRule>(
+					(cameraType) => ({
+						id: `autoremoval-${cameraType}`,
+						prefix: `${cameraType}/`,
+						expiration: Duration.days(2)
+					})
+				)
 			}
 		},
 		cors: [

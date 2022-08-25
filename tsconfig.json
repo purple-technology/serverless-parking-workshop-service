@@ -10,5 +10,8 @@
 		"noErrorTruncation": true,
 		"allowSyntheticDefaultImports": true
 	},
+	"paths": {
+		"@packages/*": ["./packages/*"]
+	},
 	"include": ["stacks"]
 }
