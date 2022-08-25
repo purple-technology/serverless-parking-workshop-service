@@ -23,6 +23,12 @@ export type Api = {
 	key: Scalars['String']
 }
 
+export enum Camera {
+	Entrance = 'Entrance',
+	Exit = 'Exit',
+	ParkingLot = 'ParkingLot'
+}
+
 export type Config = {
 	__typename?: 'Config'
 	eventBusArn?: Maybe<Scalars['String']>
@@ -57,11 +63,37 @@ export type Query = {
 	__typename?: 'Query'
 	api: Api
 	config: Config
+	photoSignedUrl: SignedUrl
+}
+
+export type QueryPhotoSignedUrlArgs = {
+	camera: Camera
+}
+
+export type SignedUrl = {
+	__typename?: 'SignedUrl'
+	fields: Scalars['String']
+	key: Scalars['String']
+	url: Scalars['String']
 }
 
 export type Void = {
 	__typename?: 'Void'
 	success: Scalars['Boolean']
+}
+
+export type PhotoSignedUrlQueryVariables = Exact<{
+	camera: Camera
+}>
+
+export type PhotoSignedUrlQuery = {
+	__typename?: 'Query'
+	photoSignedUrl: {
+		__typename?: 'SignedUrl'
+		url: string
+		key: string
+		fields: string
+	}
 }
 
 export type ApiKeyQueryVariables = Exact<{ [key: string]: never }>

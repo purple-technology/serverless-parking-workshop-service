@@ -22,7 +22,7 @@ export const getAllBuckets = async (
 	const bucket = await dynamoDb.scan(params).promise()
 
 	const buckets = (bucket.Items ?? []).map((item) => ({
-		bucketName: `${item.BucketName.S}`,
+		bucketName: `${item.s3BucketName.S}`,
 		username: `${item.username.S}`
 	}))
 

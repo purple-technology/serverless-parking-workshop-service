@@ -30,7 +30,11 @@ export const RegisterChild: React.FC = () => {
 				password
 			})
 			await Auth.signIn(username, password)
-			router.push('/')
+			if (username === 'admin') {
+				router.push('/camera')
+			} else {
+				router.push('/')
+			}
 		} catch (err) {
 			enqueue({
 				message: (err as Error).message

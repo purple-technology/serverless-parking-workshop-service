@@ -1,6 +1,6 @@
 import { Query } from '@packages/app-graphql-types'
 import { AppSyncIdentityCognito, AppSyncResolverHandler } from 'aws-lambda'
-import AWS from 'aws-sdk'
+import AWS, { AWSError } from 'aws-sdk'
 
 const dynamoDb = new AWS.DynamoDB()
 const eventBridge = new AWS.EventBridge()
@@ -10,12 +10,20 @@ export const handler: AppSyncResolverHandler<{}, Query['config']> = async (
 ) => {
 	const username = (event.identity as AppSyncIdentityCognito).username
 
-	const targets = await eventBridge
-		.listTargetsByRule({
-			EventBusName: `${process.env.EVENT_BUS_NAME}`,
-			Rule: `${username}-all`
-		})
-		.promise()
+	let targets = null
+
+	try {
+		targets = await eventBridge
+			.listTargetsByRule({
+				EventBusName: `${process.env.EVENT_BUS_NAME}`,
+				Rule: `${username}-all`
+			})
+			.promise()
+	} catch (err) {
+		if ((err as AWSError).name !== 'ResourceNotFoundException') {
+			throw err
+		}
+	}
 
 	const data = await dynamoDb
 		.getItem({
@@ -30,7 +38,7 @@ export const handler: AppSyncResolverHandler<{}, Query['config']> = async (
 		.promise()
 
 	return {
-		eventBusArn: (targets.Targets ?? [])[0]?.Arn ?? null,
+		eventBusArn: (targets?.Targets ?? [])[0]?.Arn ?? null,
 		s3BucketName: data.Item?.s3BucketName?.S ?? null
 	}
 }

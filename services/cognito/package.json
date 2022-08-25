@@ -4,7 +4,9 @@
 	"private": true,
 	"type": "module",
 	"scripts": {},
-	"dependencies": {},
+	"dependencies": {
+		"aws-sdk": "^2.0.0"
+	},
 	"devDependencies": {
 		"@types/aws-lambda": "^8.10.102"
 	}

@@ -7,6 +7,7 @@ import {
 } from '@serverless-stack/resources'
 import { Table } from '@serverless-stack/resources'
 import { Fn, RemovalPolicy } from 'aws-cdk-lib'
+import { CfnUserPoolGroup } from 'aws-cdk-lib/aws-cognito'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 import { BucketAccessControl } from 'aws-cdk-lib/aws-s3'
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment'
@@ -43,6 +44,8 @@ export function ResourcesStack({
 		timeToLiveAttribute: 'ttl'
 	})
 
+	const adminGroupName = 'Admins'
+
 	const auth = new Auth(stack, 'Auth', {
 		login: ['username'],
 		triggers: {
@@ -52,8 +55,16 @@ export function ResourcesStack({
 			postConfirmation: {
 				handler: 'cognito/src/postConfirmation.handler',
 				environment: {
-					USER_DATA_TABLE_NAME: userDataTable.tableName
-				}
+					USER_DATA_TABLE_NAME: userDataTable.tableName,
+					ADMIN_GROUP_NAME: adminGroupName
+				},
+				permissions: [
+					new PolicyStatement({
+						effect: Effect.ALLOW,
+						actions: ['cognito-idp:AdminAddUserToGroup'],
+						resources: ['*']
+					})
+				]
 			}
 		},
 		cdk: {
@@ -76,6 +87,12 @@ export function ResourcesStack({
 			resources: [userDataTable.tableArn]
 		})
 	])
+
+	new CfnUserPoolGroup(stack, 'AdminsUserGroup', {
+		groupName: adminGroupName,
+		userPoolId: auth.userPoolId,
+		description: 'Group for admin user which is taking photos of cars'
+	})
 
 	const replicatorFunction = new Function(stack, 'ReplicatorFunction', {
 		handler: 's3/src/replicator/index.handler',
