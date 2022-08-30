@@ -3,6 +3,7 @@ import { CognitoUser } from '@aws-amplify/auth'
 import { createGraphiQLFetcher } from '@graphiql/toolkit'
 import {
 	ApiKeyQuery,
+	Camera,
 	CopyObjectMutation,
 	CopyObjectMutationVariables,
 	EventBusArnMutation,
@@ -32,6 +33,12 @@ import SyntaxHighlighter from 'react-syntax-highlighter'
 import github from 'react-syntax-highlighter/dist/cjs/styles/hljs/github'
 import styled from 'styled-components'
 
+const cameraImageConfig: { [row: number]: Camera } = {
+	0: Camera.Entrance,
+	1: Camera.Exit,
+	2: Camera.ParkingLot
+}
+
 const Box = styled.div`
 	position: relative;
 	width: 25%;
@@ -58,12 +65,6 @@ const cardOverrides = {
 			margin: 'auto'
 		}
 	}
-} as const
-
-const itemProps = {
-	display: 'flex',
-	alignItems: 'center',
-	justifyContent: 'center'
 } as const
 
 const snackbarNegativeOverrides = {
@@ -404,21 +405,32 @@ export const HomeChild: React.FC = () => {
 					>
 						Upload selected image
 					</Button>
+					<Block>
+						Camera:{' '}
+						{cameraImageConfig[Math.floor((Number(s3SelectedImage) - 1) / 2)]}
+					</Block>
 				</Block>
 				<FlexGrid
-					flexGridColumnCount={3}
-					flexGridColumnGap="scale800"
+					flexGridColumnCount={2}
+					justifyContent="center"
+					flexGridColumnGap="scale500"
 					flexGridRowGap="scale800"
-					height="80vh"
 					padding="20px"
 				>
-					{['1', '2', '3', '4', '5', '6'].map((id) => (
-						<FlexGridItem key={id} {...itemProps} onClick={s3ImageOnClick(id)}>
+					{['1', '2', '3', '4', '5', '6'].map((id, i) => (
+						<FlexGridItem
+							key={id}
+							display="flex"
+							alignItems="center"
+							justifyContent={i % 2 === 0 ? 'right' : 'left'}
+						>
 							<img
 								src={`${process.env.NEXT_PUBLIC_S3_PHOTO_OBJECT_BASE_URL}/${id}.jpg`}
 								alt={`${id}.jpg`}
+								onClick={s3ImageOnClick(id)}
 								style={{
-									width: '100%',
+									maxHeight: '30vmin',
+									maxWidth: '30vmin',
 									cursor: 'pointer',
 									borderRadius: '0.5em',
 									border: `solid 5px ${
