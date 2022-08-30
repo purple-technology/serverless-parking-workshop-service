@@ -18,10 +18,10 @@
 		"styletron-engine-atomic": "^1.4.8",
 		"styletron-react": "^6.0.2",
 		"styled-components": "^6.0.0-alpha.5",
-		"react-camera-pro": "^1.1.1",
+		"react-camera-pro": "^1.2.1",
 		"@tanstack/react-query": "^4.1.3",
-		"graphiql": "^1.11.4",
-		"@graphiql/toolkit": "^0.6.1",
+		"graphiql": "^1.11.5",
+		"@graphiql/toolkit": "^0.7.0",
 		"react-syntax-highlighter": "^15.5.0",
 		"@types/react-syntax-highlighter": "^15.5.4",
 		"jimp": "^0.16.1"

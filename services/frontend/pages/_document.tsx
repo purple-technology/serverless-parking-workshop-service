@@ -75,7 +75,7 @@ class AppDocument extends Document<AppDocumentProps> {
 						href="https://codemirror.net/5/lib/codemirror.css"
 					/>
 					<link
-						href="https://unpkg.com/graphiql/graphiql.min.css"
+						href="https://unpkg.com/graphiql@1.11.5/graphiql.min.css"
 						rel="stylesheet"
 					/>
 					<link rel="icon" href="/favicon.ico" />
