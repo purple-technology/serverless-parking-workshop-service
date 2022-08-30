@@ -237,19 +237,16 @@ export const CameraScene: React.FC = () => {
 				</StatusBox>
 				<Block height="10px" />
 				<Select
+					clearable={false}
 					options={devices.map(({ deviceId, label }) => ({
 						label: label,
 						id: deviceId
 					}))}
 					value={typeof activeDevice === 'undefined' ? [] : [activeDevice]}
 					placeholder="Select webcam source device"
-					onChange={(params) =>
+					onChange={(params): void =>
 						setActiveDevice(
-							params.type === 'clear'
-								? undefined
-								: devices.find(
-										({ deviceId }) => deviceId === params.value[0].id
-								  )
+							devices.find(({ deviceId }) => deviceId === params.value[0].id)
 						)
 					}
 				/>
@@ -265,7 +262,7 @@ export const CameraScene: React.FC = () => {
 							: [{ label: selectedCamera, id: selectedCamera }]
 					}
 					placeholder="Select camera type"
-					onChange={(params) =>
+					onChange={(params): void =>
 						setSelectedCamera(
 							params.type === 'clear'
 								? undefined
@@ -279,7 +276,7 @@ export const CameraScene: React.FC = () => {
 					max={0.5}
 					step={0.025}
 					value={[distanceThreshold]}
-					onChange={({ value }) => setDistanceThreshold(value[0])}
+					onChange={({ value }): void => setDistanceThreshold(value[0])}
 				/>
 			</StyledAction>
 		</Card>
