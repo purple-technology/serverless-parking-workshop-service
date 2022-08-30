@@ -5,6 +5,7 @@ import {
 	PhotoSignedUrlQueryVariables
 } from '@packages/app-graphql-types'
 import { API, Auth } from 'aws-amplify'
+import { Block } from 'baseui/block'
 import { Card, StyledAction, StyledBody } from 'baseui/card'
 import { Select } from 'baseui/select'
 import { Slider } from 'baseui/slider'
@@ -41,7 +42,20 @@ const StatusBox = styled.div`
 
 export const CameraScene: React.FC = () => {
 	const camera = useRef<CameraType>()
+	const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
+	const [activeDevice, setActiveDevice] = useState<MediaDeviceInfo | undefined>(
+		undefined
+	)
 	const [user, setUser] = useState<CognitoUser | undefined>()
+
+	useEffect(() => {
+		;(async (): Promise<void> => {
+			const devices = await navigator.mediaDevices.enumerateDevices()
+			const videoDevices = devices.filter((i) => i.kind == 'videoinput')
+			setDevices(videoDevices)
+			setActiveDevice(videoDevices[0])
+		})()
+	}, [])
 
 	const [selectedCamera, setSelectedCamera] = useState<
 		CameraGQLType | undefined
@@ -194,11 +208,15 @@ export const CameraScene: React.FC = () => {
 						facingMode="environment"
 						ref={camera}
 						aspectRatio={16 / 9}
+						videoSourceDeviceId={activeDevice?.deviceId}
 						errorMessages={{
-							canvas: 'a',
-							noCameraAccessible: 'b',
-							permissionDenied: 'c',
-							switchCamera: 'd'
+							noCameraAccessible:
+								'No camera device accessible. Please connect your camera or try a different browser.',
+							permissionDenied:
+								'Permission denied. Please refresh and give camera permission.',
+							switchCamera:
+								'It is not possible to switch camera to different one because there is only one video device accessible.',
+							canvas: 'Canvas is not supported.'
 						}}
 					/>
 				</SmallBox>
@@ -217,6 +235,25 @@ export const CameraScene: React.FC = () => {
 						)}
 					</Emoji>
 				</StatusBox>
+				<Block height="10px" />
+				<Select
+					options={devices.map(({ deviceId, label }) => ({
+						label: label,
+						id: deviceId
+					}))}
+					value={typeof activeDevice === 'undefined' ? [] : [activeDevice]}
+					placeholder="Select webcam source device"
+					onChange={(params) =>
+						setActiveDevice(
+							params.type === 'clear'
+								? undefined
+								: devices.find(
+										({ deviceId }) => deviceId === params.value[0].id
+								  )
+						)
+					}
+				/>
+				<Block height="10px" />
 				<Select
 					options={Object.values(CameraGQLType).map((cameraType) => ({
 						label: cameraType,
@@ -236,6 +273,7 @@ export const CameraScene: React.FC = () => {
 						)
 					}
 				/>
+
 				<Slider
 					min={0}
 					max={0.5}
