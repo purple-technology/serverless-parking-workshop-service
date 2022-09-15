@@ -2,6 +2,7 @@ import { App } from '@serverless-stack/resources'
 
 import { AppApiStack } from './app-api'
 import { FrontendStack } from './frontend'
+import { IotStack } from './iot'
 import { ResourcesStack } from './resources'
 import { ServiceApiStack } from './service-api'
 
@@ -22,4 +23,5 @@ export default function (app: App): void {
 	app.stack(ServiceApiStack, { id: 'serviceApi' })
 	app.stack(AppApiStack, { id: 'appApi' })
 	app.stack(FrontendStack, { id: 'frontend' })
+	app.stack(IotStack, { id: 'iot' })
 }
