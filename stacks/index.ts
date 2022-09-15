@@ -15,8 +15,8 @@ export default function (app: App): void {
 		}
 	})
 
-	//app.stack(ResourcesStack, { id: 'resources' })
-	//app.stack(ApiStack, { id: 'api' })
-	//app.stack(FrontendStack, { id: 'frontend' })
+	app.stack(ResourcesStack, { id: 'resources' })
+	app.stack(ApiStack, { id: 'api' })
+	app.stack(FrontendStack, { id: 'frontend' })
 	app.stack(IotStack, { id: 'iot' })
 }
