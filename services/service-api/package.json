@@ -1,0 +1,12 @@
+{
+	"name": "service-api",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {},
+	"dependencies": {},
+	"devDependencies": {
+		"@types/aws-lambda": "^8.10.102",
+		"aws-sdk": "^2.0.0"
+	}
+}

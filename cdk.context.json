@@ -2,5 +2,9 @@
 	"hosted-zone:account=922925171681:domainName=purple-technology.com:region=eu-central-1": {
 		"Id": "/hostedzone/Z051033434SSI88T8S7K4",
 		"Name": "purple-technology.com."
+	},
+	"hosted-zone:account=221940693656:domainName=workshops.purple-technology.com:region=eu-central-1": {
+		"Id": "/hostedzone/Z0904769DTA026RMSVAH",
+		"Name": "workshops.purple-technology.com."
 	}
 }

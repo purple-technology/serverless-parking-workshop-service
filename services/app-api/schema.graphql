@@ -1,0 +1,38 @@
+enum Camera {
+	Entrance
+	Exit
+	ParkingLot
+}
+
+type SignedUrl {
+	url: String!
+	key: String!
+	fields: String!
+}
+
+type Config {
+	eventBusArn: String
+	s3BucketName: String
+}
+
+type Api {
+	key: String!
+}
+
+type Void {
+	success: Boolean!
+}
+
+type Query {
+	api: Api!
+	config: Config!
+	photoSignedUrl(camera: Camera!): SignedUrl!
+		@aws_auth(cognito_groups: ["Admins"])
+}
+
+type Mutation {
+	copyS3Object(objectId: ID!): Void!
+	sendEvent(eventId: ID!): Void!
+	setEventBusArn(eventBusArn: String!): Void
+	setS3BucketName(s3BucketName: String!): Void
+}

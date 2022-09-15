@@ -1,0 +1,13 @@
+{
+	"extends": "../../../tsconfig.json",
+	"include": ["src"],
+	"compilerOptions": {
+		"module": "esnext",
+		"target": "es2017",
+		"moduleResolution": "node",
+		"baseUrl": ".",
+		"paths": {
+			"@packages/*": ["../*"]
+		}
+	}
+}

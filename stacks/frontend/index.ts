@@ -2,31 +2,36 @@ import { getBasePath } from '@purple/serverless-git-branch-stage-plugin'
 import { NextjsSite, StackContext, use } from '@serverless-stack/resources'
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager'
 
-import { ApiStack } from '../api'
+import { AppApiStack } from '../app-api'
 import { ResourcesStack } from '../resources'
+import { ServiceApiStack } from '../service-api'
 
 export function FrontendStack({ stack }: StackContext): void {
-	const api = use(ApiStack)
+	const appApi = use(AppApiStack)
+	const serviceApi = use(ServiceApiStack)
 	const resources = use(ResourcesStack)
 
-	const domainName = `${getBasePath()}-sls-ws-fe.purple-technology.com`
+	const domainName = `${getBasePath()}-sls-ws-fe.workshops.purple-technology.com`
 
 	new NextjsSite(stack, 'Next', {
 		path: 'services/frontend',
 		environment: {
-			NEXT_PUBLIC_API_URL: api.appSyncApi.url,
+			NEXT_PUBLIC_APP_API_URL: appApi.appSyncApi.url,
 			NEXT_PUBLIC_USER_POOL_ID: resources.auth.cdk.userPool.userPoolId,
 			NEXT_PUBLIC_USER_POOL_CLIENT_ID:
-				resources.auth.cdk.userPoolClient.userPoolClientId
+				resources.auth.cdk.userPoolClient.userPoolClientId,
+			NEXT_PUBLIC_SERVICE_API_URL: serviceApi.appSyncApi.url,
+			NEXT_PUBLIC_S3_PHOTO_OBJECT_BASE_URL:
+				resources.photosBucket.cdk.bucket.urlForObject()
 		},
 		customDomain: {
 			domainName,
-			hostedZone: 'purple-technology.com',
+			hostedZone: 'workshops.purple-technology.com',
 			cdk: {
 				certificate: Certificate.fromCertificateArn(
 					stack,
 					'certificate',
-					'arn:aws:acm:us-east-1:922925171681:certificate/b26a8b5a-2b90-4486-9532-c5849d37df7d'
+					'arn:aws:acm:us-east-1:221940693656:certificate/ffae389e-59f7-469b-98c2-32933136b189'
 				)
 			}
 		}

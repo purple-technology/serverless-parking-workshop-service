@@ -1,0 +1,6 @@
+{
+	"name": "@packages/app-graphql-types",
+	"version": "1.0.0",
+	"type": "module",
+	"main": "src/index.ts"
+}

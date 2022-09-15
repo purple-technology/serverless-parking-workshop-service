@@ -8,13 +8,14 @@ import Document, {
 } from 'next/document'
 import * as React from 'react'
 import { ServerStyleSheet } from 'styled-components'
-import { Server, Sheet } from 'styletron-engine-atomic'
+import { Server } from 'styletron-engine-atomic'
+import { sheetT } from 'styletron-engine-atomic/lib/server/server'
 import { Provider as StyletronProvider } from 'styletron-react'
 
 import { styletron } from '../config/styletron'
 
 interface AppDocumentProps {
-	styletronStylesheets: Sheet[]
+	styletronStylesheets: sheetT[]
 }
 
 class AppDocument extends Document<AppDocumentProps> {
@@ -69,6 +70,14 @@ class AppDocument extends Document<AppDocumentProps> {
 							key={i}
 						/>
 					))}
+					<link
+						rel="stylesheet"
+						href="https://codemirror.net/5/lib/codemirror.css"
+					/>
+					<link
+						href="https://unpkg.com/graphiql@1.11.5/graphiql.min.css"
+						rel="stylesheet"
+					/>
 					<link rel="icon" href="/favicon.ico" />
 				</Head>
 				<body>
