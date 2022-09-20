@@ -16,10 +16,6 @@ const policyDocument = {
 }
 
 export function IotStack({ stack }: StackContext): IotStackOutput {
-	stack.setDefaultFunctionProps({
-		srcPath: 'services'
-	})
-
 	const csr = fs.readFileSync('./iot/certificate.pem.csr', 'utf8')
 
 	const certificate = new iot.CfnCertificate(stack, 'M5StackCertificate', {

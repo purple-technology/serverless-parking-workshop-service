@@ -18,21 +18,35 @@ export type Scalars = {
 	Float: number
 }
 
-export type Mutation = {
-	__typename?: 'Mutation'
-	allowEntry: Scalars['Boolean']
-	reserveSpace: Scalars['Boolean']
+export enum Gate {
+	Entry = 'Entry',
+	Exit = 'Exit'
 }
 
-export type MutationReserveSpaceArgs = {
-	space: Scalars['ID']
+export type Mutation = {
+	__typename?: 'Mutation'
+	cancelReservation: Void
+	openGate: Void
+	reserveSpot: Void
+}
+
+export type MutationCancelReservationArgs = {
+	spot: Scalars['ID']
 	subject: Scalars['String']
-	time?: InputMaybe<Scalars['Int']>
+}
+
+export type MutationOpenGateArgs = {
+	gate: Gate
+}
+
+export type MutationReserveSpotArgs = {
+	spot: Scalars['ID']
+	subject: Scalars['String']
+	timeSeconds: Scalars['Int']
 }
 
 export type ParkingLot = {
 	__typename?: 'ParkingLot'
-	gateOpen: Scalars['Boolean']
 	reservations: Array<Reservation>
 	time: Scalars['String']
 }
@@ -40,20 +54,17 @@ export type ParkingLot = {
 export type Query = {
 	__typename?: 'Query'
 	parkingLot: ParkingLot
-	signedUrl: SignedUrl
 }
 
 export type Reservation = {
 	__typename?: 'Reservation'
 	creationTimestamp: Scalars['String']
-	remainingTime?: Maybe<Scalars['Int']>
-	space: Scalars['ID']
+	expirationTimestamp: Scalars['String']
+	spot: Scalars['ID']
 	subject: Scalars['String']
 }
 
-export type SignedUrl = {
-	__typename?: 'SignedUrl'
-	fields: Scalars['String']
-	key: Scalars['String']
-	url: Scalars['String']
+export type Void = {
+	__typename?: 'Void'
+	success: Scalars['Boolean']
 }
