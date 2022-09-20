@@ -4,37 +4,30 @@ import {
 	Bucket,
 	EventBus,
 	Function,
-	StackContext
+	StackContext,
+	Table
 } from '@serverless-stack/resources'
-import { Table } from '@serverless-stack/resources'
 import { Duration, Fn, RemovalPolicy } from 'aws-cdk-lib'
 import { CfnUserPoolGroup } from 'aws-cdk-lib/aws-cognito'
-import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import { Effect, PolicyStatement, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
+import { CfnTopicRule } from 'aws-cdk-lib/aws-iot'
 import { BucketAccessControl, LifecycleRule } from 'aws-cdk-lib/aws-s3'
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment'
 import kebabCase from 'lodash.kebabcase'
+import snakeCase from 'lodash.snakecase'
 
 interface ResourcesStackOutput {
 	auth: Auth
 	userDataTable: Table
+	reservationsTable: Table
 	photosBucket: Bucket
 	eventBus: EventBus
 }
-/**
- *
- *
- * @export
- * @param {StackContext} { stack }
- * @returns {ResourcesStackOutput}
- */
+
 export function ResourcesStack({
 	stack,
 	app
 }: StackContext): ResourcesStackOutput {
-	stack.setDefaultFunctionProps({
-		srcPath: 'services'
-	})
-
 	const eventBus = new EventBus(stack, 'EventBus', {})
 
 	const userDataTable = new Table(stack, 'UserData', {
@@ -158,9 +151,57 @@ export function ResourcesStack({
 		})
 	])
 
+	const reservationsTable = new Table(stack, 'ReservationsTable', {
+		fields: {
+			spotNumber: 'string'
+		},
+		primaryIndex: {
+			partitionKey: 'spotNumber'
+		}
+	})
+
+	const iotInitFunction = new Function(stack, 'IotInitFunction', {
+		handler: 'iot/src/initRule.handler',
+		environment: {
+			RESERVATIONS_TABLE: reservationsTable.tableName
+		},
+		permissions: [
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: ['iot:Publish'],
+				resources: ['arn:aws:iot:eu-central-1:221940693656:topic/core2/parking']
+			}),
+			new PolicyStatement({
+				effect: Effect.ALLOW,
+				actions: ['dynamodb:GetItem'],
+				resources: [reservationsTable.tableArn]
+			})
+		]
+	})
+
+	iotInitFunction.addPermission('IotPermission', {
+		principal: new ServicePrincipal('iot.amazonaws.com'),
+		action: 'lambda:InvokeFunction'
+	})
+
+	new CfnTopicRule(stack, 'InitIotRule', {
+		ruleName: snakeCase(`${stack.stackName}-init-rule`),
+		topicRulePayload: {
+			sql: `SELECT * FROM 'core2/parking-outputs' WHERE event="init"`,
+			actions: [
+				{
+					lambda: {
+						functionArn: iotInitFunction.functionArn
+					}
+				}
+			]
+		}
+	})
+
 	return {
 		auth,
 		eventBus,
+		reservationsTable,
 		photosBucket,
 		userDataTable
 	}

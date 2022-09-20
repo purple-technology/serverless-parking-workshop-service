@@ -25,10 +25,6 @@ export function AppApiStack({ stack }: StackContext): AppApiStackOutput {
 	const resources = use(ResourcesStack)
 	const serviceApi = use(ServiceApiStack)
 
-	stack.setDefaultFunctionProps({
-		srcPath: 'services'
-	})
-
 	const eventBusRole = new Role(stack, 'EventBusRole', {
 		assumedBy: new ServicePrincipal('events.amazonaws.com'),
 		inlinePolicies: {

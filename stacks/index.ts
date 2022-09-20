@@ -3,6 +3,7 @@ import { App } from '@serverless-stack/resources'
 import { AppApiStack } from './app-api'
 import { FrontendStack } from './frontend'
 import { IotStack } from './iot'
+import { ReservationsStack } from './reservations'
 import { ResourcesStack } from './resources'
 import { ServiceApiStack } from './service-api'
 
@@ -14,12 +15,14 @@ export default function (app: App): void {
 	app.setDefaultFunctionProps({
 		runtime: 'nodejs16.x',
 		logRetention: 'three_months',
+		srcPath: 'services',
 		bundle: {
 			format: 'esm'
 		}
 	})
 
 	app.stack(ResourcesStack, { id: 'resources' })
+	app.stack(ReservationsStack, { id: 'reservations' })
 	app.stack(ServiceApiStack, { id: 'serviceApi' })
 	app.stack(AppApiStack, { id: 'appApi' })
 	app.stack(FrontendStack, { id: 'frontend' })
