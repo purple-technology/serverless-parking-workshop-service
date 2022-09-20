@@ -25,22 +25,26 @@ export function IotStack({ stack }: StackContext): IotStackOutput {
 
 	stack.addOutputs({ certificateId: certificate.attrId })
 
+	const policyName = `${stack.stackName}-iotPolicy`
+
 	new iot.CfnPolicy(stack, 'M5StackPolicy', {
 		policyDocument: policyDocument,
-		policyName: 'AllowAll'
+		policyName: policyName
 	})
 
 	new iot.CfnPolicyPrincipalAttachment(
 		stack,
 		'MyCfnPolicyCertificateAttachment',
 		{
-			policyName: 'AllowAll',
+			policyName: policyName,
 			principal: certificate.attrArn
 		}
 	)
 
+	const thingName = `${stack.stackName}-M5StackCore2`
+
 	new iot.CfnThing(stack, 'M5StackThing', {
-		thingName: 'M5StackCore2'
+		thingName: thingName
 	})
 
 	new iot.CfnThingPrincipalAttachment(
@@ -48,7 +52,7 @@ export function IotStack({ stack }: StackContext): IotStackOutput {
 		'M5StackThingCertificateAttachment',
 		{
 			principal: certificate.attrArn,
-			thingName: 'M5StackCore2'
+			thingName: thingName
 		}
 	)
 
