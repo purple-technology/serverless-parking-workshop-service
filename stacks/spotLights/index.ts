@@ -1,4 +1,4 @@
-import { DetailType, source } from '@packages/event-bus'
+import { allUsersDetailValue, DetailType, source } from '@packages/event-bus'
 import { Function, StackContext, use } from '@serverless-stack/resources'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 import {
@@ -62,6 +62,7 @@ export function SpotLightsStack({
 							{
 								eventBus: resources.eventBus.cdk.eventBus,
 								detail: TaskInput.fromObject({
+									targetUser: allUsersDetailValue,
 									'spotNumber.$': '$.spotNumber'
 								}),
 								detailType,

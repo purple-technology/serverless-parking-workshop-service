@@ -1,4 +1,4 @@
-import { DetailType, source } from '@packages/event-bus'
+import { allUsersDetailValue, DetailType, source } from '@packages/event-bus'
 import {
 	Gate,
 	Mutation,
@@ -34,6 +34,7 @@ export const handler: AppSyncResolverHandler<
 					Source: source,
 					DetailType: gateDetailType,
 					Detail: JSON.stringify({
+						targetUser: allUsersDetailValue,
 						gate: event.arguments.gate === Gate.Entry ? 'entry' : 'exit'
 					})
 				}
