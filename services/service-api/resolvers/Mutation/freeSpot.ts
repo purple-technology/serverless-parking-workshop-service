@@ -1,7 +1,4 @@
-import {
-	Mutation,
-	MutationCancelReservationArgs
-} from '@packages/service-graphql-types'
+import { Mutation, MutationFreeSpotArgs } from '@packages/service-graphql-types'
 import { AppSyncResolverHandler } from 'aws-lambda'
 import AWS, { AWSError } from 'aws-sdk'
 
@@ -11,28 +8,10 @@ const iotData = new AWS.IotData({
 })
 
 export const handler: AppSyncResolverHandler<
-	MutationCancelReservationArgs,
-	Mutation['cancelReservation']
+	MutationFreeSpotArgs,
+	Mutation['freeSpot']
 > = async (event) => {
 	try {
-		await dynamoDb
-			.deleteItem({
-				TableName: `${process.env.RESERVATIONS_TABLE}`,
-				Key: {
-					spotNumber: {
-						S: `${event.arguments.spot}`
-					}
-				},
-				ExpressionAttributeValues: {
-					':subject': {
-						S: event.arguments.subject
-					}
-				},
-				ConditionExpression:
-					'attribute_exists(spotNumber) AND subject = :subject'
-			})
-			.promise()
-
 		await iotData
 			.publish({
 				topic: 'core2/parking',
@@ -40,6 +19,19 @@ export const handler: AppSyncResolverHandler<
 					event: 'freeSpot',
 					spotNumber: Number(event.arguments.spot)
 				})
+			})
+			.promise()
+
+		await dynamoDb
+			.deleteItem({
+				TableName: `${process.env.SPOTS_TABLE}`,
+				Key: {
+					spotNumber: {
+						S: `${event.arguments.spot}`
+					}
+				},
+
+				ConditionExpression: 'attribute_exists(spotNumber)'
 			})
 			.promise()
 	} catch (err) {

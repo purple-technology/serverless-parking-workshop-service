@@ -5,24 +5,19 @@ const iotData = new AWS.IotData({
 })
 const dynamoDb = new AWS.DynamoDB()
 
-const getSpotValue = async (spot: number): Promise<number> => {
+const getSpotValue = async (spot: string): Promise<number> => {
 	const data = await dynamoDb
 		.getItem({
-			TableName: `${process.env.RESERVATIONS_TABLE}`,
+			TableName: `${process.env.SPOTS_TABLE}`,
 			Key: {
 				spotNumber: {
-					S: `${spot}`
+					S: spot
 				}
 			}
 		})
 		.promise()
 
-	if (
-		typeof data.Item === 'undefined' ||
-		data.Item === null ||
-		(typeof data.Item?.expiresAt?.S === 'string' &&
-			data.Item?.expiresAt?.S <= new Date().toISOString())
-	) {
+	if (typeof data.Item === 'undefined' || data.Item === null) {
 		return 0
 	}
 
@@ -36,14 +31,14 @@ export const handler = async (): Promise<void> => {
 			payload: JSON.stringify({
 				event: 'init',
 				occupiedSpots: [
-					await getSpotValue(1),
-					await getSpotValue(2),
-					await getSpotValue(3),
-					await getSpotValue(4),
-					await getSpotValue(5),
-					await getSpotValue(6),
-					await getSpotValue(7),
-					await getSpotValue(8)
+					await getSpotValue('1'),
+					await getSpotValue('2'),
+					await getSpotValue('3'),
+					await getSpotValue('4'),
+					await getSpotValue('5'),
+					await getSpotValue('6'),
+					await getSpotValue('7'),
+					await getSpotValue('8')
 				]
 			})
 		})

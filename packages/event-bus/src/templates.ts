@@ -3,46 +3,40 @@ import { BaseDetail, DetailType, Source } from './types'
 type Template = {
 	source: Source
 	detailType: DetailType
-	detail: BaseDetail
+	detail: BaseDetail & Record<string, string | number>
 }
 
-const gateOpened = (username: string): Template => ({
+const entryGateOpened = (username: string): Template => ({
 	source: 'parking-service',
 	detailType: 'gate-opened',
 	detail: {
-		targetUser: username
+		targetUser: username,
+		gate: 'entry'
 	}
 })
 
-const gateClosed = (username: string): Template => ({
+const exitGateOpened = (username: string): Template => ({
 	source: 'parking-service',
-	detailType: 'gate-closed',
+	detailType: 'gate-opened',
 	detail: {
-		targetUser: username
+		targetUser: username,
+		gate: 'exit'
 	}
 })
 
-const reservationCreated = (username: string): Template => ({
+const spotExpired = (username: string): Template => ({
 	source: 'parking-service',
-	detailType: 'reservation-created',
+	detailType: 'spot-expired',
 	detail: {
-		targetUser: username
-	}
-})
-
-const reservationExpired = (username: string): Template => ({
-	source: 'parking-service',
-	detailType: 'reservation-expired',
-	detail: {
-		targetUser: username
+		targetUser: username,
+		spotNumber: 4
 	}
 })
 
 export const templates: {
 	readonly [key: string]: (username: string) => Template
 } = {
-	1: gateOpened,
-	2: gateClosed,
-	3: reservationCreated,
-	4: reservationExpired
+	1: entryGateOpened,
+	2: exitGateOpened,
+	3: spotExpired
 } as const

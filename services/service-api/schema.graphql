@@ -1,11 +1,12 @@
 type Query {
-	parkingLot: ParkingLot!
+	spots: [Spot!]!
 }
 
 type Mutation {
 	openGate(gate: Gate!): Void!
-	reserveSpot(spot: ID!, subject: String!, timeSeconds: Int!): Void!
-	cancelReservation(spot: ID!, subject: String!): Void!
+	occupySpot(spot: ID!, timeSeconds: Int): Void!
+	freeSpot(spot: ID!): Void!
+	navigateToSpot(spot: ID!): Void!
 }
 
 type Void {
@@ -17,14 +18,12 @@ enum Gate {
 	Exit
 }
 
-type ParkingLot {
-	time: String!
-	reservations: [Reservation!]!
+enum SpotStatus {
+	On
+	Off
 }
 
-type Reservation {
+type Spot {
 	spot: ID!
-	subject: String!
-	creationTimestamp: String!
-	expirationTimestamp: String!
+	status: SpotStatus!
 }

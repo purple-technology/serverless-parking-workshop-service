@@ -331,6 +331,11 @@ export const HomeChild: React.FC = () => {
 					style: {
 						height: '100vh'
 					}
+				},
+				TabList: {
+					style: {
+						backgroundColor: '#FFFFFF'
+					}
 				}
 			}}
 		>
@@ -443,40 +448,44 @@ export const HomeChild: React.FC = () => {
 				</FlexGrid>
 			</Tab>
 			<Tab title="Amazon EventBridge" overrides={tabOverrides}>
-				<div>EventBridge</div>
-				<Select
-					options={[
-						{ label: 'Gate Opened', id: '1' },
-						{ label: 'Gate Closed', id: '2' },
-						{ label: 'Reservation Created', id: '3' },
-						{ label: 'Reservation Expired', id: '4' }
-					]}
-					value={eventSelectValue ? [eventSelectValue] : []}
-					placeholder="Choose event"
-					onChange={(params): void => {
-						if (params.type === 'select') {
-							setEventSelectValue(params.value[0])
-						}
-					}}
-				/>
-				<SyntaxHighlighter language="javascript" style={github}>
-					{typeof eventSelectValue !== 'undefined'
-						? JSON.stringify(
-								templates[`${eventSelectValue.id}`](user.getUsername()),
-								null,
-								2
-						  )
-						: ''}
-				</SyntaxHighlighter>
-
-				<Button
-					disabled={typeof eventSelectValue === 'undefined'}
-					onClick={(): void => {
-						sendEventMutation.mutate({ eventId: `${eventSelectValue?.id}` })
-					}}
-				>
-					Send Event
-				</Button>
+				<Block marginTop="20px" />
+				<Card title="Mock EventBridge Event" overrides={cardOverrides}>
+					<StyledBody>
+						<Select
+							options={[
+								{ label: 'Entry gate opened', id: '1' },
+								{ label: 'Exit gate opened', id: '2' },
+								{ label: 'Spot expired', id: '3' }
+							]}
+							value={eventSelectValue ? [eventSelectValue] : []}
+							placeholder="Choose event"
+							onChange={(params): void => {
+								if (params.type === 'select') {
+									setEventSelectValue(params.value[0])
+								}
+							}}
+						/>
+						<SyntaxHighlighter language="javascript" style={github}>
+							{typeof eventSelectValue !== 'undefined'
+								? JSON.stringify(
+										templates[`${eventSelectValue.id}`](user.getUsername()),
+										null,
+										2
+								  )
+								: 'Select event...'}
+						</SyntaxHighlighter>
+					</StyledBody>
+					<StyledAction>
+						<Button
+							disabled={typeof eventSelectValue === 'undefined'}
+							onClick={(): void => {
+								sendEventMutation.mutate({ eventId: `${eventSelectValue?.id}` })
+							}}
+						>
+							Send Event
+						</Button>
+					</StyledAction>
+				</Card>
 			</Tab>
 		</Tabs>
 	)

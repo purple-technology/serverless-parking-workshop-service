@@ -2,8 +2,8 @@ import { AuthorizationType } from '@aws-cdk/aws-appsync-alpha'
 import { AppSyncApi, StackContext, use } from '@serverless-stack/resources'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
-import { ReservationsStack } from '../reservations'
 import { ResourcesStack } from '../resources'
+import { SpotLightsStack } from '../spotLights'
 import { dataSources, resolvers } from './appSyncLoaders'
 
 interface ServiceApiStackOutput {
@@ -14,16 +14,17 @@ export function ServiceApiStack({
 	stack
 }: StackContext): ServiceApiStackOutput {
 	const resources = use(ResourcesStack)
-	const reservations = use(ReservationsStack)
+	const spotLights = use(SpotLightsStack)
 
 	const appSyncApi = new AppSyncApi(stack, 'ServiceGraphqlApi', {
 		schema: 'services/service-api/schema.graphql',
 		defaults: {
 			function: {
 				environment: {
-					RESERVATIONS_TABLE: resources.reservationsTable.tableName,
-					EXPIRE_RESERVATION_SM:
-						reservations.expireReservationStateMachine.stateMachineArn
+					SPOTS_TABLE: resources.spotsTable.tableName,
+					EXPIRE_SPOT_LIGHTS_SM:
+						spotLights.expireSpotLightStateMachine.stateMachineArn,
+					EVENT_BUS_NAME: resources.eventBus.eventBusName
 				}
 			}
 		},
@@ -54,12 +55,17 @@ export function ServiceApiStack({
 				'dynamodb:DeleteItem',
 				'dynamodb:GetItem'
 			],
-			resources: [resources.reservationsTable.tableArn]
+			resources: [resources.spotsTable.tableArn]
 		}),
 		new PolicyStatement({
 			effect: Effect.ALLOW,
 			actions: ['states:StartExecution'],
-			resources: [reservations.expireReservationStateMachine.stateMachineArn]
+			resources: [spotLights.expireSpotLightStateMachine.stateMachineArn]
+		}),
+		new PolicyStatement({
+			effect: Effect.ALLOW,
+			actions: ['events:PutEvents'],
+			resources: [resources.eventBus.eventBusArn]
 		})
 	])
 

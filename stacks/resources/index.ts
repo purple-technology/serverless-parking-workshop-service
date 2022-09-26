@@ -19,7 +19,7 @@ import snakeCase from 'lodash.snakecase'
 interface ResourcesStackOutput {
 	auth: Auth
 	userDataTable: Table
-	reservationsTable: Table
+	spotsTable: Table
 	photosBucket: Bucket
 	eventBus: EventBus
 }
@@ -151,7 +151,7 @@ export function ResourcesStack({
 		})
 	])
 
-	const reservationsTable = new Table(stack, 'ReservationsTable', {
+	const spotsTable = new Table(stack, 'SpotsTable', {
 		fields: {
 			spotNumber: 'string'
 		},
@@ -163,7 +163,7 @@ export function ResourcesStack({
 	const iotInitFunction = new Function(stack, 'IotInitFunction', {
 		handler: 'iot/src/initRule.handler',
 		environment: {
-			RESERVATIONS_TABLE: reservationsTable.tableName
+			SPOTS_TABLE: spotsTable.tableName
 		},
 		permissions: [
 			new PolicyStatement({
@@ -174,7 +174,7 @@ export function ResourcesStack({
 			new PolicyStatement({
 				effect: Effect.ALLOW,
 				actions: ['dynamodb:GetItem'],
-				resources: [reservationsTable.tableArn]
+				resources: [spotsTable.tableArn]
 			})
 		]
 	})
@@ -201,7 +201,7 @@ export function ResourcesStack({
 	return {
 		auth,
 		eventBus,
-		reservationsTable,
+		spotsTable,
 		photosBucket,
 		userDataTable
 	}

@@ -25,43 +25,43 @@ export enum Gate {
 
 export type Mutation = {
 	__typename?: 'Mutation'
-	cancelReservation: Void
+	freeSpot: Void
+	navigateToSpot: Void
+	occupySpot: Void
 	openGate: Void
-	reserveSpot: Void
 }
 
-export type MutationCancelReservationArgs = {
+export type MutationFreeSpotArgs = {
 	spot: Scalars['ID']
-	subject: Scalars['String']
+}
+
+export type MutationNavigateToSpotArgs = {
+	spot: Scalars['ID']
+}
+
+export type MutationOccupySpotArgs = {
+	spot: Scalars['ID']
+	timeSeconds?: InputMaybe<Scalars['Int']>
 }
 
 export type MutationOpenGateArgs = {
 	gate: Gate
 }
 
-export type MutationReserveSpotArgs = {
-	spot: Scalars['ID']
-	subject: Scalars['String']
-	timeSeconds: Scalars['Int']
-}
-
-export type ParkingLot = {
-	__typename?: 'ParkingLot'
-	reservations: Array<Reservation>
-	time: Scalars['String']
-}
-
 export type Query = {
 	__typename?: 'Query'
-	parkingLot: ParkingLot
+	spots: Array<Spot>
 }
 
-export type Reservation = {
-	__typename?: 'Reservation'
-	creationTimestamp: Scalars['String']
-	expirationTimestamp: Scalars['String']
+export type Spot = {
+	__typename?: 'Spot'
 	spot: Scalars['ID']
-	subject: Scalars['String']
+	status: SpotStatus
+}
+
+export enum SpotStatus {
+	Off = 'Off',
+	On = 'On'
 }
 
 export type Void = {

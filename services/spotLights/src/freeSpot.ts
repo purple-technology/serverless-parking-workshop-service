@@ -16,7 +16,7 @@ export const handler = async (
 ): Promise<FreeSpotHandlerEvent> => {
 	await dynamoDb
 		.deleteItem({
-			TableName: `${process.env.RESERVATIONS_TABLE}`,
+			TableName: `${process.env.SPOTS_TABLE}`,
 			Key: {
 				spotNumber: {
 					S: `${event.spotNumber}`
@@ -28,7 +28,7 @@ export const handler = async (
 				}
 			},
 			ConditionExpression:
-				'attribute_exists(spotNumber) AND expiresAt = :expiresAt'
+				'attribute_exists(spotNumber) AND attribute_exists(expiresAt) AND expiresAt = :expiresAt'
 		})
 		.promise()
 
