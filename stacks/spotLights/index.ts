@@ -53,7 +53,8 @@ export function SpotLightsStack({
 			})
 				.next(
 					new LambdaInvoke(stack, 'IotFunction', {
-						lambdaFunction: iotSpotLightFunction
+						lambdaFunction: iotSpotLightFunction,
+						outputPath: '$.Payload'
 					})
 				)
 				.next(
