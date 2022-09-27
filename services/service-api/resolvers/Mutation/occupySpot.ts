@@ -52,7 +52,11 @@ export const handler: AppSyncResolverHandler<
 					typeof expireDate === 'undefined'
 						? 'SET createdAt = :createdAt REMOVE expiresAt'
 						: 'SET createdAt = :createdAt, expiresAt = :expiresAt',
-				ConditionExpression: 'attribute_not_exists(spotNumber)'
+				ConditionExpression: `attribute_not_exists(spotNumber)${
+					typeof expireDate === 'undefined'
+						? ' OR attribute_exists(expiresAt)'
+						: ''
+				}`
 			})
 			.promise()
 
