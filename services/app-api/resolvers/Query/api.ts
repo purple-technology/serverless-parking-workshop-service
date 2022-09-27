@@ -22,12 +22,13 @@ export const handler: AppSyncResolverHandler<{}, Query['api']> = async (
 		})
 		.promise()
 
+	if (typeof data.Item === 'undefined') {
+		throw new Error('User expired')
+	}
+
 	let apiKey: string = data.Item?.apiKey?.S as string
 
-	if (
-		typeof data.Item === 'undefined' ||
-		typeof data.Item?.apiKey?.S === 'undefined'
-	) {
+	if (typeof data.Item?.apiKey?.S === 'undefined') {
 		const newKey = await appSync
 			.createApiKey({
 				apiId: `${process.env.SERVICE_API_ID}`,
