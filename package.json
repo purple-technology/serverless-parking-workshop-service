@@ -19,7 +19,7 @@
 		"test": "vitest run",
 		"tdd": "vitest --watch",
 		"graphql-codegen": "graphql-codegen --config codegen.yml",
-		"generate-key-csr": "chmod +x ./generate-ca.sh;./iot/generate-certkey.sh",
+		"generate-key-csr": "chmod +x ./generate-certkey.sh;./iot/generate-certkey.sh",
 		"download-certificate": "echo $(AWS_PROFILE=admin-purple-workshops aws iot describe-certificate --certificate-id $(AWS_PROFILE=purple-workshops aws cloudformation describe-stacks --stack-name \"$(cat .sst/stage)-slsws-iot\" --query \"Stacks[0].Outputs[0].OutputValue\" --output text) | sed -n 's/.*\\\"certificatePem\\\":\\ \"//p'| sed -e 's/\",$//') > ./iot/certificate.pem.crt"
 	},
 	"lint-staged": {
