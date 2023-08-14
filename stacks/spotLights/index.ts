@@ -1,5 +1,4 @@
 import { allUsersDetailValue, DetailType, source } from '@packages/event-bus'
-import { Function, StackContext, use } from '@serverless-stack/resources'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 import {
 	StateMachine,
@@ -11,6 +10,7 @@ import {
 	EventBridgePutEvents,
 	LambdaInvoke
 } from 'aws-cdk-lib/aws-stepfunctions-tasks'
+import { Function, StackContext, use } from 'sst/constructs'
 
 import { ResourcesStack } from '../resources'
 
@@ -23,8 +23,8 @@ export function SpotLightsStack({
 }: StackContext): SpotLightsStackOutput {
 	const resources = use(ResourcesStack)
 
-	const iotSpotLightFunction = new Function(stack, 'IotInitFunction', {
-		handler: 'spotLights/src/freeSpot.handler',
+	const iotSpotLightFunction = new Function(stack, 'IotSpotLightFunction', {
+		handler: 'services/spotLights/src/freeSpot.handler',
 		environment: {
 			SPOTS_TABLE: resources.spotsTable.tableName
 		},

@@ -1,10 +1,9 @@
+import { Fn } from 'aws-cdk-lib'
 import {
 	AuthorizationType,
+	MappingTemplate,
 	UserPoolDefaultAction
-} from '@aws-cdk/aws-appsync-alpha'
-import { MappingTemplate } from '@aws-cdk/aws-appsync-alpha'
-import { AppSyncApi, StackContext, use } from '@serverless-stack/resources'
-import { Fn } from 'aws-cdk-lib'
+} from 'aws-cdk-lib/aws-appsync'
 import {
 	Effect,
 	PolicyDocument,
@@ -12,6 +11,7 @@ import {
 	Role,
 	ServicePrincipal
 } from 'aws-cdk-lib/aws-iam'
+import { AppSyncApi, StackContext, use } from 'sst/constructs'
 
 import { ResourcesStack } from '../resources'
 import { ServiceApiStack } from '../service-api'

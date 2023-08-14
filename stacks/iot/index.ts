@@ -1,6 +1,6 @@
-import { StackContext } from '@serverless-stack/resources'
 import { aws_iot as iot } from 'aws-cdk-lib'
 import * as fs from 'fs'
+import { StackContext } from 'sst/constructs'
 
 interface IotStackOutput {}
 

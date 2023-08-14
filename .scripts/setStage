@@ -1,4 +1,0 @@
-#!/bin/sh
-
-mkdir -p .sst
-echo "console.log(require('@purple/serverless-git-branch-stage-plugin').getStage())" | node > .sst/stage

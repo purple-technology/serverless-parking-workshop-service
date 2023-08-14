@@ -1,4 +1,4 @@
-import { GraphQLResult } from '@aws-amplify/api-graphql/lib/types'
+import { GraphQLResult } from '@aws-amplify/api-graphql/lib-esm/types'
 import { CognitoUser } from '@aws-amplify/auth'
 import { createGraphiQLFetcher } from '@graphiql/toolkit'
 import {

@@ -1,5 +1,0 @@
-#!/bin/sh
-
-mkdir -p services/frontend/node_modules/.bin && \
-ln -s ../../../../node_modules/.bin/next services/frontend/node_modules/.bin
-ln -s ../../../../node_modules/.bin/sst-env services/frontend/node_modules/.bin

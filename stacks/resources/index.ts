@@ -1,12 +1,4 @@
 import { Camera } from '@packages/app-graphql-types'
-import {
-	Auth,
-	Bucket,
-	EventBus,
-	Function,
-	StackContext,
-	Table
-} from '@serverless-stack/resources'
 import { Duration, Fn, RemovalPolicy } from 'aws-cdk-lib'
 import { CfnUserPoolGroup } from 'aws-cdk-lib/aws-cognito'
 import { Effect, PolicyStatement, ServicePrincipal } from 'aws-cdk-lib/aws-iam'
@@ -15,9 +7,17 @@ import { BucketAccessControl, LifecycleRule } from 'aws-cdk-lib/aws-s3'
 import { BucketDeployment, Source } from 'aws-cdk-lib/aws-s3-deployment'
 import kebabCase from 'lodash.kebabcase'
 import snakeCase from 'lodash.snakecase'
+import {
+	Bucket,
+	Cognito,
+	EventBus,
+	Function,
+	StackContext,
+	Table
+} from 'sst/constructs'
 
 interface ResourcesStackOutput {
-	auth: Auth
+	auth: Cognito
 	userDataTable: Table
 	spotsTable: Table
 	photosBucket: Bucket
@@ -40,14 +40,14 @@ export function ResourcesStack({
 
 	const adminGroupName = 'Admins'
 
-	const auth = new Auth(stack, 'Auth', {
+	const auth = new Cognito(stack, 'Auth', {
 		login: ['username'],
 		triggers: {
 			preSignUp: {
-				handler: 'cognito/src/preSignUp.handler'
+				handler: 'services/cognito/src/preSignUp.handler'
 			},
 			postConfirmation: {
-				handler: 'cognito/src/postConfirmation.handler',
+				handler: 'services/cognito/src/postConfirmation.handler',
 				environment: {
 					USER_DATA_TABLE_NAME: userDataTable.tableName,
 					ADMIN_GROUP_NAME: adminGroupName
@@ -89,7 +89,7 @@ export function ResourcesStack({
 	})
 
 	const replicatorFunction = new Function(stack, 'ReplicatorFunction', {
-		handler: 's3/src/replicator/index.handler',
+		handler: 'services/s3/src/replicator/index.handler',
 		environment: {
 			USER_DATA_TABLE_NAME: userDataTable.tableName
 		},
@@ -161,7 +161,7 @@ export function ResourcesStack({
 	})
 
 	const iotInitFunction = new Function(stack, 'IotInitFunction', {
-		handler: 'iot/src/initRule.handler',
+		handler: 'services/iot/src/initRule.handler',
 		environment: {
 			SPOTS_TABLE: spotsTable.tableName
 		},

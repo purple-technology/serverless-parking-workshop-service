@@ -1,6 +1,6 @@
 import { getBasePath } from '@purple/serverless-git-branch-stage-plugin'
-import { NextjsSite, StackContext, use } from '@serverless-stack/resources'
 import { Certificate } from 'aws-cdk-lib/aws-certificatemanager'
+import { NextjsSite, StackContext, use } from 'sst/constructs'
 
 import { AppApiStack } from '../app-api'
 import { ResourcesStack } from '../resources'

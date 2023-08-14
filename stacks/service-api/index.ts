@@ -1,6 +1,6 @@
-import { AuthorizationType } from '@aws-cdk/aws-appsync-alpha'
-import { AppSyncApi, StackContext, use } from '@serverless-stack/resources'
+import { AuthorizationType } from 'aws-cdk-lib/aws-appsync'
 import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
+import { AppSyncApi, StackContext, use } from 'sst/constructs'
 
 import { ResourcesStack } from '../resources'
 import { SpotLightsStack } from '../spotLights'

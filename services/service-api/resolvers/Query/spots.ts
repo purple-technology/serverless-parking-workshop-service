@@ -25,7 +25,7 @@ const getSpot = async (spot: string): Promise<Spot> => {
 
 	return {
 		spot,
-		status: data.Item.status as SpotStatus
+		status: SpotStatus.On
 	}
 }
 

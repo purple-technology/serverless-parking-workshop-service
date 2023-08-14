@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 
 const graphqlPath = path.join(
 	path.dirname(fileURLToPath(import.meta.url)),
-	'../../services/app-api/resolvers'
+	'services/app-api/resolvers'
 )
 
 const typesFields = readdirSync(graphqlPath).reduce<
@@ -29,7 +29,7 @@ const typesFields = readdirSync(graphqlPath).reduce<
 export const dataSources = typesFields.reduce(
 	(acc, { type, field }) => ({
 		...acc,
-		[`${type} ${field}`]: `app-api/resolvers/${type}/${field}.handler`
+		[`${type} ${field}`]: `services/app-api/resolvers/${type}/${field}.handler`
 	}),
 	{}
 )
