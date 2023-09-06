@@ -11,6 +11,8 @@ type SignedUrl {
 }
 
 type Config {
+	isMachineRunning: Boolean!
+	machineAddress: String
 	eventBusArn: String
 	s3BucketName: String
 }
@@ -34,5 +36,10 @@ type Mutation {
 	copyS3Object(objectId: ID!): Void!
 	sendEvent(eventId: ID!): Void!
 	setEventBusArn(eventBusArn: String!): Void
+	startMachine(
+		accessKeyId: String!
+		secretAccessKey: String!
+		sessionToken: String!
+	): Void
 	setS3BucketName(s3BucketName: String!): Void
 }

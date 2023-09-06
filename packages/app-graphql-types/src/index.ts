@@ -32,6 +32,8 @@ export enum Camera {
 export type Config = {
 	__typename?: 'Config'
 	eventBusArn?: Maybe<Scalars['String']>
+	isMachineRunning: Scalars['Boolean']
+	machineAddress?: Maybe<Scalars['String']>
 	s3BucketName?: Maybe<Scalars['String']>
 }
 
@@ -41,6 +43,7 @@ export type Mutation = {
 	sendEvent: Void
 	setEventBusArn?: Maybe<Void>
 	setS3BucketName?: Maybe<Void>
+	startMachine?: Maybe<Void>
 }
 
 export type MutationCopyS3ObjectArgs = {
@@ -57,6 +60,12 @@ export type MutationSetEventBusArnArgs = {
 
 export type MutationSetS3BucketNameArgs = {
 	s3BucketName: Scalars['String']
+}
+
+export type MutationStartMachineArgs = {
+	accessKeyId: Scalars['String']
+	secretAccessKey: Scalars['String']
+	sessionToken: Scalars['String']
 }
 
 export type Query = {
@@ -96,6 +105,17 @@ export type PhotoSignedUrlQuery = {
 	}
 }
 
+export type MachineQueryVariables = Exact<{ [key: string]: never }>
+
+export type MachineQuery = {
+	__typename?: 'Query'
+	config: {
+		__typename?: 'Config'
+		isMachineRunning: boolean
+		machineAddress?: string | null
+	}
+}
+
 export type ApiKeyQueryVariables = Exact<{ [key: string]: never }>
 
 export type ApiKeyQuery = {
@@ -103,9 +123,22 @@ export type ApiKeyQuery = {
 	api: { __typename?: 'Api'; key: string }
 	config: {
 		__typename?: 'Config'
+		isMachineRunning: boolean
+		machineAddress?: string | null
 		eventBusArn?: string | null
 		s3BucketName?: string | null
 	}
+}
+
+export type StartMachineMutationVariables = Exact<{
+	accessKeyId: Scalars['String']
+	secretAccessKey: Scalars['String']
+	sessionToken: Scalars['String']
+}>
+
+export type StartMachineMutation = {
+	__typename?: 'Mutation'
+	startMachine?: { __typename?: 'Void'; success: boolean } | null
 }
 
 export type EventBusArnMutationVariables = Exact<{

@@ -4,6 +4,7 @@ import AWS, { AWSError } from 'aws-sdk'
 
 const dynamoDb = new AWS.DynamoDB()
 const eventBridge = new AWS.EventBridge()
+const ec2 = new AWS.EC2()
 
 export const handler: AppSyncResolverHandler<{}, Query['config']> = async (
 	event
@@ -33,11 +34,44 @@ export const handler: AppSyncResolverHandler<{}, Query['config']> = async (
 					S: username
 				}
 			},
-			AttributesToGet: ['s3BucketName']
+			AttributesToGet: ['s3BucketName', 'instanceId']
 		})
 		.promise()
 
+	let isMachineRunning = false
+	let machineAddress = null
+	if (typeof data.Item?.instanceId?.S !== 'undefined') {
+		isMachineRunning = true
+
+		const statuses = await ec2
+			.describeInstanceStatus({
+				InstanceIds: [data.Item?.instanceId?.S]
+			})
+			.promise()
+
+		if (
+			typeof statuses.InstanceStatuses !== 'undefined' &&
+			statuses.InstanceStatuses.length > 0 &&
+			typeof statuses.InstanceStatuses[0].SystemStatus !== 'undefined' &&
+			statuses.InstanceStatuses[0].SystemStatus.Status !== 'initializing'
+		) {
+			const instances = await ec2
+				.describeInstances({
+					InstanceIds: [data.Item?.instanceId?.S]
+				})
+				.promise()
+
+			machineAddress =
+				typeof instances.Reservations !== 'undefined' &&
+				typeof instances.Reservations[0].Instances !== 'undefined'
+					? instances.Reservations[0].Instances[0].PublicDnsName
+					: null
+		}
+	}
+
 	return {
+		isMachineRunning,
+		machineAddress,
 		eventBusArn: (targets?.Targets ?? [])[0]?.Arn ?? null,
 		s3BucketName: data.Item?.s3BucketName?.S ?? null
 	}

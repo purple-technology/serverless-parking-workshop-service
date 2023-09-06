@@ -101,6 +101,15 @@ export function AppApiStack({ stack }: StackContext): AppApiStackOutput {
 		}),
 		new PolicyStatement({
 			effect: Effect.ALLOW,
+			actions: [
+				'ec2:RunInstances',
+				'ec2:DescribeInstances',
+				'ec2:DescribeInstanceStatus'
+			],
+			resources: ['*']
+		}),
+		new PolicyStatement({
+			effect: Effect.ALLOW,
 			actions: ['s3:PutObject'],
 			resources: ['*']
 		}),

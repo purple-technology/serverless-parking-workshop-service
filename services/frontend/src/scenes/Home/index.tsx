@@ -8,10 +8,13 @@ import {
 	CopyObjectMutationVariables,
 	EventBusArnMutation,
 	EventBusArnMutationVariables,
+	MachineQuery,
 	S3BucketNameMutation,
 	S3BucketNameMutationVariables,
 	SendEventMutation,
-	SendEventMutationVariables
+	SendEventMutationVariables,
+	StartMachineMutation,
+	StartMachineMutationVariables
 } from '@packages/app-graphql-types'
 import { templates } from '@packages/event-bus'
 import { useMutation, useQuery } from '@tanstack/react-query'
@@ -26,6 +29,7 @@ import { Option, Select } from 'baseui/select'
 import { DURATION, SnackbarProvider, useSnackbar } from 'baseui/snackbar'
 import { Spinner } from 'baseui/spinner'
 import { Tab, Tabs } from 'baseui/tabs-motion'
+import { Textarea } from 'baseui/textarea'
 import GraphiQL from 'graphiql'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
@@ -88,6 +92,11 @@ export const HomeChild: React.FC = () => {
 	const [activeTab, setActiveTab] = useState<string | number>('0')
 
 	// AWS Settings
+	const [accessKeyId, setAccessKeyId] = useState<string>('ACCESS_KEY_ID_HERE')
+	const [secretAccessKey, setSecretAccessKey] = useState<string>(
+		'SECRET_ACCESS_KEY_HERE'
+	)
+	const [sessionToken, setSessionToken] = useState<string>('SESSION_TOKEN_HERE')
 	const [eventBusArn, setEventBusArn] = useState<string | undefined>()
 	const [s3BucketName, setS3BucketName] = useState<string | undefined>()
 
@@ -102,6 +111,20 @@ export const HomeChild: React.FC = () => {
 
 	const { enqueue } = useSnackbar()
 
+	const machineQuery = useQuery<MachineQuery>(['machine'], async () => {
+		const { data } = (await API.graphql({
+			query: /* GraphQL */ `
+				query Machine {
+					config {
+						isMachineRunning
+						machineAddress
+					}
+				}
+			`
+		})) as { data: MachineQuery }
+		return data
+	})
+
 	const apiKeyQuery = useQuery<ApiKeyQuery>(
 		['apiKey'],
 		async () => {
@@ -112,6 +135,8 @@ export const HomeChild: React.FC = () => {
 							key
 						}
 						config {
+							isMachineRunning
+							machineAddress
 							eventBusArn
 							s3BucketName
 						}
@@ -128,6 +153,56 @@ export const HomeChild: React.FC = () => {
 				if (typeof s3BucketName === 'undefined') {
 					setS3BucketName(config.s3BucketName ?? '')
 				}
+			}
+		}
+	)
+
+	const startMachineMutation = useMutation<
+		StartMachineMutation,
+		GraphQLResult<StartMachineMutation>,
+		StartMachineMutationVariables
+	>(
+		['startMachine'],
+		async (variables) => {
+			const { data } = (await API.graphql({
+				query: /* GraphQL */ `
+					mutation StartMachine(
+						$accessKeyId: String!
+						$secretAccessKey: String!
+						$sessionToken: String!
+					) {
+						startMachine(
+							accessKeyId: $accessKeyId
+							secretAccessKey: $secretAccessKey
+							sessionToken: $sessionToken
+						) {
+							success
+						}
+					}
+				`,
+				variables
+			})) as { data: StartMachineMutation }
+			return data
+		},
+		{
+			onError: ({ errors }) => {
+				const error = (errors ?? [])[0]
+				enqueue(
+					{
+						message: `Error: ${error.message}`,
+						overrides: snackbarNegativeOverrides
+					},
+					DURATION.long
+				)
+			},
+			onSuccess: () => {
+				enqueue(
+					{
+						message: 'Machine is starting...',
+						overrides: snackbarPositiveOverrides
+					},
+					DURATION.short
+				)
 			}
 		}
 	)
@@ -356,6 +431,118 @@ export const HomeChild: React.FC = () => {
 				/>
 			</Tab>
 			<Tab title="AWS Settings" overrides={tabOverrides}>
+				<Block marginTop="20px" />
+				{machineQuery.isLoading ? (
+					<Card title="VS Code Server Host" overrides={cardOverrides}>
+						<StyledBody>Loading...</StyledBody>
+					</Card>
+				) : machineQuery.data?.config.isMachineRunning === true ? (
+					<Card title="VS Code Server Host" overrides={cardOverrides}>
+						<StyledBody>
+							<Input
+								value={
+									typeof machineQuery.data?.config.machineAddress === 'string'
+										? `ubuntu@${machineQuery.data?.config.machineAddress}`
+										: machineQuery.isFetching
+										? 'Fetching...'
+										: 'Instance is preparing...'
+								}
+							/>
+						</StyledBody>
+						<StyledAction>
+							<Button
+								onClick={(): void => {
+									machineQuery.refetch()
+								}}
+								size="compact"
+							>
+								Reload
+							</Button>
+						</StyledAction>
+					</Card>
+				) : (
+					<Card
+						title="Start VS Code development machine"
+						overrides={cardOverrides}
+					>
+						<StyledBody>
+							<Textarea
+								overrides={{
+									Input: {
+										props: {
+											onPaste: (event: ClipboardEvent) => {
+												const newData = (
+													event.clipboardData?.getData('text') as string
+												)
+													?.replace(/export(\ )?/gi, '')
+													?.split('\n')
+													?.reduce(
+														(acc, row) => {
+															const [key, value] = row.trim().split('=')
+															const cleanKey = key?.trim()
+															const cleanValue = value?.replaceAll('"', '')
+
+															switch (cleanKey) {
+																case 'AWS_ACCESS_KEY_ID':
+																	acc.accessKeyId = cleanValue
+																	break
+																case 'AWS_SECRET_ACCESS_KEY':
+																	acc.secretAccessKey = cleanValue
+																	break
+																case 'AWS_SESSION_TOKEN':
+																	acc.sessionToken = cleanValue
+																	break
+															}
+
+															return acc
+														},
+														{
+															accessKeyId: accessKeyId,
+															secretAccessKey: secretAccessKey,
+															sessionToken: sessionToken
+														}
+													)
+
+												setAccessKeyId(newData.accessKeyId)
+												setSecretAccessKey(newData.secretAccessKey)
+												setSessionToken(newData.sessionToken)
+											}
+										}
+									}
+								}}
+								value={`export AWS_ACCESS_KEY_ID="${accessKeyId}"
+export AWS_SECRET_ACCESS_KEY="${secretAccessKey}"
+export AWS_SESSION_TOKEN="${sessionToken}"`}
+								rows={6}
+								clearOnEscape
+							/>
+						</StyledBody>
+						<StyledAction>
+							<Button
+								disabled={
+									accessKeyId.length < 5 ||
+									secretAccessKey.length < 5 ||
+									sessionToken.length < 5 ||
+									accessKeyId === 'ACCESS_KEY_ID_HERE' ||
+									secretAccessKey === 'SESSION_TOKEN_HERE' ||
+									sessionToken === 'SECRET_ACCESS_KEY_HERE'
+								}
+								onClick={async (): Promise<void> => {
+									await startMachineMutation.mutateAsync({
+										accessKeyId,
+										secretAccessKey,
+										sessionToken
+									})
+									machineQuery.refetch()
+								}}
+								size="compact"
+							>
+								Start machine
+							</Button>
+						</StyledAction>
+					</Card>
+				)}
+
 				<Block marginTop="20px" />
 				<Card title="Amazon EventBridge ARN" overrides={cardOverrides}>
 					<StyledBody>
