@@ -41,31 +41,37 @@ export const handler: AppSyncResolverHandler<{}, Query['config']> = async (
 	let isMachineRunning = false
 	let machineAddress = null
 	if (typeof data.Item?.instanceId?.S !== 'undefined') {
-		isMachineRunning = true
+		try {
+			isMachineRunning = true
 
-		const statuses = await ec2
-			.describeInstanceStatus({
-				InstanceIds: [data.Item?.instanceId?.S]
-			})
-			.promise()
-
-		if (
-			typeof statuses.InstanceStatuses !== 'undefined' &&
-			statuses.InstanceStatuses.length > 0 &&
-			typeof statuses.InstanceStatuses[0].SystemStatus !== 'undefined' &&
-			statuses.InstanceStatuses[0].SystemStatus.Status !== 'initializing'
-		) {
-			const instances = await ec2
-				.describeInstances({
+			const statuses = await ec2
+				.describeInstanceStatus({
 					InstanceIds: [data.Item?.instanceId?.S]
 				})
 				.promise()
 
-			machineAddress =
-				typeof instances.Reservations !== 'undefined' &&
-				typeof instances.Reservations[0].Instances !== 'undefined'
-					? instances.Reservations[0].Instances[0].PublicDnsName
-					: null
+			if (
+				typeof statuses.InstanceStatuses !== 'undefined' &&
+				statuses.InstanceStatuses.length > 0 &&
+				typeof statuses.InstanceStatuses[0].SystemStatus !== 'undefined' &&
+				statuses.InstanceStatuses[0].SystemStatus.Status !== 'initializing'
+			) {
+				const instances = await ec2
+					.describeInstances({
+						InstanceIds: [data.Item?.instanceId?.S]
+					})
+					.promise()
+
+				machineAddress =
+					typeof instances.Reservations !== 'undefined' &&
+					typeof instances.Reservations[0].Instances !== 'undefined'
+						? instances.Reservations[0].Instances[0].PublicDnsName
+						: null
+			}
+		} catch (err) {
+			console.error(err)
+			isMachineRunning = false
+			machineAddress = null
 		}
 	}
 

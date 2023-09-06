@@ -93,8 +93,6 @@ export const handler: AppSyncResolverHandler<
 		})
 		.promise()
 
-	console.log(JSON.stringify(response))
-
 	if (typeof response.Instances === 'undefined') {
 		throw new Error(`Instance creation failed. No instance returned.`)
 	}
